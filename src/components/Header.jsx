@@ -1,18 +1,52 @@
-function Header() { 
-  return ( 
-    <header className="bg-white shadow-md"> 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center"> 
-        <h1 className="text-2xl font-bold text-pink-600">SmartBabyCare</h1> 
-        <nav className="hidden md:flex space-x-8"> 
-          <a href="#" className="text-gray-600 hover:text-pink-600">Comment ça marche</a> 
-          <a href="#" className="text-gray-600 hover:text-pink-600">Devenir Sitter</a> 
-          <a href="#" className="text-gray-600 hover:text-pink-600">Connexion</a> 
-        </nav> 
-        <button type="submit" className="bg-pink-500 text-white px-4 rounded-full hover:bg-pink-600 transition duration-300"> 
-       Réserver </button>
-      </div> 
-    </header> 
-  ) 
-} 
- 
-export default Header
+// components/Header.jsx
+import { useState } from "react";
+
+const Header = ({ 
+  logoText = "SmartBabyCare",
+  onSearchClick,
+  onBookingsClick,
+  onMessagesClick,
+  onAccountClick,
+  userAuthenticated = false,
+  userName = ""
+}) => {
+  return (
+    <header className="bg-white shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-pink-600 cursor-pointer">
+          {logoText}
+        </h1>
+        
+        <nav className="hidden md:flex space-x-8">
+          <button 
+            onClick={onSearchClick}
+            className="text-gray-600 hover:text-pink-600 transition"
+          >
+            Recherche
+          </button>
+          <button 
+            onClick={onBookingsClick}
+            className="text-gray-600 hover:text-pink-600 transition"
+          >
+            Mes réservations
+          </button>
+          <button 
+            onClick={onMessagesClick}
+            className="text-gray-600 hover:text-pink-600 transition"
+          >
+            Messages
+          </button>
+        </nav>
+        
+        <button 
+          onClick={onAccountClick}
+          className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition"
+        >
+          {userAuthenticated ? userName : "Mon compte"}
+        </button>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

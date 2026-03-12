@@ -2,6 +2,19 @@ function Home() {
     return ( 
      
       <main className="flex-grow" >
+        <header className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-pink-600">SmartBabyCare</h1>
+          <nav className="hidden md:flex space-x-8">
+            <a href="#" className="text-pink-600 font-semibold">Comment ca marche </a>
+            <a href="#" className="text-gray-600 hover:text-pink-600">Devenir Sitter</a>
+            <a href="#" className="text-gray-600 hover:text-pink-600">Connexion</a>
+          </nav>
+          <button className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition">
+            Réserver 
+          </button>
+        </div>
+      </header>
         <section className="relative overflow-hidden bg-[url('src/assets/image/photo-page_accueil.jpeg')] 
         bg-cover bg-center"> 
         <div className="absolute inset-0 bg-gradient-to-r from-pink-900/60 via-pink-700/30 to-black/20" > </div>
@@ -121,7 +134,11 @@ function Home() {
                     Notre IA analyse plus de 50 points de données pour garantir que la baby-sitter recommandée correspond parfaitement à la personnalité et aux besoins de votre enfant.</p>
                     <button className="bg-pink-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-pink-700 transition duration-300">Découvrir le Matching IA</button>
                 </div>
-              </section> 
+              </section>
+               <footer className="bg-gray-800 text-white text-center py-6"> 
+      <p>© 2026 SmartBabyCare. Tous droits réservés.</p> 
+    </footer> 
+            
         </main> 
     ) 
   } 
