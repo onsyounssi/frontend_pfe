@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import{ registerUser } from "../services/authService";
-    
-function Register () {
+import { registerUser } from "../services/authService"; // Vérifiez que le chemin est correct
+
+function Register() {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -65,17 +65,7 @@ function Register () {
     }
 
     return newErrors;
-  };
-
-  const registerUser= async (userData) => {
-    // Simulation d'un appel API
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Inscription réussie:', userData);
-        resolve({ success: true, message: 'Compte créé avec succès!' });
-      }, 1500);
-    });
-  };
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,7 +79,7 @@ function Register () {
     setIsLoading(true);
     
     try {
-      // Appel de la fonction register
+      // Appel de la fonction registerUser du service
       const response = await registerUser({
         fullName: formData.fullName,
         phone: formData.phone,
@@ -112,6 +102,8 @@ function Register () {
           confirmPassword: '',
           acceptTerms: false
         });
+      } else {
+        alert(response.message || 'Inscription réussie');
       }
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
@@ -278,8 +270,8 @@ function Register () {
                       className={`w-full appearance-none rounded-2xl border ${errors.role ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                     >
                       <option value="" disabled>Choisir…</option>
-                      <option value="Parent">Parent</option>
-                      <option value="Baby-sitter">Baby-sitter</option>
+                      <option value="parent">Parent</option>
+                      <option value="babysitter">Baby-sitter</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye w-4 h-4 rotate-90" aria-hidden="true">
@@ -335,6 +327,23 @@ function Register () {
                   </label>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <label className="inline-flex items-center space-x-2">
+                    <input
+                      name="acceptTerms"
+                      checked={formData.acceptTerms}
+                      onChange={handleChange}
+                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-offset-0"
+                      type="checkbox"
+                    />
+                    <span className="text-sm text-gray-600">J’accepte les conditions</span>
+                  </label>
+                  <button type="button" className="text-sm text-gray-700 hover:text-gray-900 font-semibold">
+                    Déjà un compte ?
+                  </button>
+                </div>
+                {errors.acceptTerms && <p className="text-red-500 text-xs -mt-3">{errors.acceptTerms}</p>}
+
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -344,23 +353,6 @@ function Register () {
                 >
                   {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
                 </button>
-
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <label className="inline-flex items-center space-x-2">
-                    <input
-                      name="acceptTerms"
-                      checked={formData.acceptTerms}
-                      onChange={handleChange}
-                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-offset-0"
-                      type="checkbox"
-                    />
-                    <span>J’accepte les conditions</span>
-                  </label>
-                  {errors.acceptTerms && <p className="text-red-500 text-xs">{errors.acceptTerms}</p>}
-                  <button type="button" className="text-gray-700 hover:text-gray-900 font-semibold">
-                    Déjà un compte ?
-                  </button>
-                </div>
 
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
                   <p className="font-semibold text-gray-900 mb-2">Conseil</p>

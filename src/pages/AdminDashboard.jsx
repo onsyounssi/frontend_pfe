@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import SearchBar from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
@@ -8,11 +8,12 @@ import ParentForm from '../components/forms/ParentForm';
 import BabysitterForm from '../components/forms/BabysitterForm';
 import { useCrud } from '../hooks/useCrud';
 
-const AdminDashboard = () => {
+
+function AdminDashboard () {
   const initialParents = [
-    { id: 101, nom: 'F. Martin', ville: 'Paris', statut: 'Actif' },
-    { id: 102, nom: 'S. Diallo', ville: 'Lyon', statut: 'Actif' },
-    { id: 103, nom: 'A. Benali', ville: 'Bordeaux', statut: 'En pause' }
+    { id: 101, nom: 'F. Mariem', ville: 'Tunis', statut: 'Actif' },
+    { id: 102, nom: 'S. Sarra', ville: 'Gabes', statut: 'Actif' },
+    { id: 103, nom: 'A. Ali', ville: 'Sfax', statut: 'En pause' }
   ];
 
   const initialBabysitters = [

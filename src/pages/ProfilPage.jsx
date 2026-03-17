@@ -1,14 +1,18 @@
 import React from 'react';
 import { ArrowLeft, MapPin, Star } from 'lucide-react';
 
-export default function ProfilPage() {
+
+function ProfilPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
+           <a href="/babysitter">
           <button className="p-2 hover:bg-gray-100 rounded-lg transition">
+           
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
+          </a>
           <h1 className="text-2xl font-bold text-pink-600">SmartBabyCare</h1>
         </div>
       </header>
@@ -69,9 +73,11 @@ export default function ProfilPage() {
                   <p className="text-2xl font-bold text-pink-600">15DNT/h</p>
                   <p className="text-sm text-gray-500">Tarif horaire</p>
                 </div>
+                <a href="/reservation">
                 <button className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition font-semibold">
                   Réserver
                 </button>
+                </a>
               </div>
             </div>
           </div>
@@ -152,5 +158,6 @@ export default function ProfilPage() {
     </div>
   );
 };
+export default ProfilPage;
         
       

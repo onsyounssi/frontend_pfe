@@ -4,7 +4,7 @@ import BookingHeader from '../components/BookingHeader';
 import ProgressSteps from '../components/ProgressSteps';
 import DateTimeForm from '../components/DateTimeForm';
 
-const BookingsPage = () => {
+function BookingsPage (){
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',

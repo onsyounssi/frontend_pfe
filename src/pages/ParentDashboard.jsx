@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/parent/Header';
 
 
@@ -106,7 +106,7 @@ function ParentDashboard() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-gray-900">Julie T.</h4>
+                    <h4 className="font-semibold text-gray-900">Asma T.</h4>
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
                       En attente
                     </span>
@@ -184,7 +184,7 @@ function ParentDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-bold text-gray-900">€60</span>
+                  <span className="font-bold text-gray-900">60DNT</span>
                   <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
                     Voir détails
                   </button>
@@ -197,7 +197,7 @@ function ParentDashboard() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-gray-900">Nadia K.</h4>
+                    <h4 className="font-semibold text-gray-900">Nessrin K.</h4>
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
                       Terminée
                     </span>
@@ -228,7 +228,7 @@ function ParentDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-bold text-gray-900">€64</span>
+                  <span className="font-bold text-gray-900">64DNT</span>
                   <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
                     Voir détails
                   </button>

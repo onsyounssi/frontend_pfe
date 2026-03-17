@@ -136,7 +136,7 @@ const SitterDashboard = () => {
                 name="city"
                 value={filters.city}
                 onChange={handleFilterChange}
-                placeholder="Ex: Paris"
+                placeholder="Ex: Tunis"
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
             </div>

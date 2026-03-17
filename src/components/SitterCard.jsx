@@ -52,13 +52,14 @@ const SitterCard = ({ sitter }) => {
           <span className="text-pink-600 font-bold">DNT{price}/h</span>
           <span className="text-gray-500 text-sm">{reviews} avis</span>
         </div>
-        
+        <a href="/profil/:id" className="w-full">
         <button 
           onClick={() => onViewProfile && onViewProfile(sitter)}
           className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition font-semibold"
         >
           Voir le profil
         </button>
+        </a>
       </div>
     </div>
   );

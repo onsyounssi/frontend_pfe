@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-const BookingHeader = ({ title, onBack }) => {
+function BookingHeader ({ title, onBack }) {
   return (
     <header className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">

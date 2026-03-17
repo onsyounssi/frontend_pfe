@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const MessagesPage = () => {
+function MessagesPage  () {
   const [messages] = useState([
     {
       id: 1,
