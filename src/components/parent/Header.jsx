@@ -5,8 +5,13 @@ const Header = () => {
       <h1 className="text-2xl font-bold text-pink-600">SmartBabyCare</h1>
       <nav className="hidden md:flex space-x-8">
         <a href="#" className="text-pink-600 font-semibold">Tableau de bord</a>
+<<<<<<< HEAD
         <a href="/babysitter" className="text-gray-600 hover:text-pink-600">Recherche</a>
         <a href="/chat" className="text-gray-600 hover:text-pink-600">Messages</a>
+=======
+        <a href="#" className="text-gray-600 hover:text-pink-600">Recherche</a>
+        <a href="#" className="text-gray-600 hover:text-pink-600">Messages</a>
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
       </nav>
       <button className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition">
         Mon compte

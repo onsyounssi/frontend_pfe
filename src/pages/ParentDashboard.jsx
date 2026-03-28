@@ -132,14 +132,22 @@ function ParentDashboard() {
                   <p className="text-sm text-gray-600 mt-2">Emma (5 ans), Lucas (3 ans)</p>
                 </div>
                 <div className="flex items-center gap-2">
+<<<<<<< HEAD
                   
                   <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
                     Détails   
+=======
+                  <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
+                    Détails
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                   </button>
                   <button className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition text-sm font-semibold">
                     Contacter
                   </button>
+<<<<<<< HEAD
                   
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                 </div>
               </div>
             </div>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Ajout pour la navigation
 import { registerUser } from "../services/authService";
@@ -5,6 +6,12 @@ import { registerUser } from "../services/authService";
 function Register() {
   const navigate = useNavigate(); // Pour la redirection
   
+=======
+import React, { useState } from 'react';
+import { registerUser } from "../services/authService"; // Vérifiez que le chemin est correct
+
+function Register() {
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -17,7 +24,10 @@ function Register() {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+<<<<<<< HEAD
   const [serverError, setServerError] = useState(''); // Pour les erreurs serveur
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -29,10 +39,13 @@ function Register() {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+<<<<<<< HEAD
     // Clear server error when user modifies any field
     if (serverError) {
       setServerError('');
     }
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
   };
 
   const validateForm = () => {
@@ -78,10 +91,13 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+<<<<<<< HEAD
     // Reset server error
     setServerError('');
     
     // First validate the form
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -91,14 +107,20 @@ function Register() {
     setIsLoading(true);
     
     try {
+<<<<<<< HEAD
       // Prepare data for API
       const userData = {
+=======
+      // Appel de la fonction registerUser du service
+      const response = await registerUser({
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
         fullName: formData.fullName,
         phone: formData.phone,
         email: formData.email,
         role: formData.role,
         password: formData.password,
         acceptTerms: formData.acceptTerms
+<<<<<<< HEAD
       };
       
       console.log('Sending registration data:', userData);
@@ -123,6 +145,14 @@ function Register() {
         }, 1000);
         
         // Reset form on success
+=======
+      });
+
+      if (response.success) {
+        // Redirection ou affichage d'un message de succès
+        alert(response.message);
+        // Réinitialiser le formulaire
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
         setFormData({
           fullName: '',
           phone: '',
@@ -133,6 +163,7 @@ function Register() {
           acceptTerms: false
         });
       } else {
+<<<<<<< HEAD
         setServerError(response.message || 'Erreur lors de l\'inscription');
       }
     } catch (error) {
@@ -158,6 +189,13 @@ function Register() {
       } else {
         setServerError('Une erreur est survenue. Veuillez réessayer.');
       }
+=======
+        alert(response.message || 'Inscription réussie');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
+      alert('Une erreur est survenue lors de l\'inscription');
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
     } finally {
       setIsLoading(false);
     }
@@ -239,6 +277,7 @@ function Register() {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* Affichage des erreurs serveur */}
               {serverError && (
                 <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
@@ -247,6 +286,8 @@ function Register() {
                 </div>
               )}
 
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="block text-sm">
@@ -396,16 +437,24 @@ function Register() {
                     />
                     <span className="text-sm text-gray-600">J’accepte les conditions</span>
                   </label>
+<<<<<<< HEAD
                   <button 
                     type="button" 
                     onClick={() => navigate('/login')} // Redirection vers login
                     className="text-sm text-gray-700 hover:text-gray-900 font-semibold"
                   >
+=======
+                  <button type="button" className="text-sm text-gray-700 hover:text-gray-900 font-semibold">
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                     Déjà un compte ?
                   </button>
                 </div>
                 {errors.acceptTerms && <p className="text-red-500 text-xs -mt-3">{errors.acceptTerms}</p>}
+<<<<<<< HEAD
                  
+=======
+
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -415,7 +464,10 @@ function Register() {
                 >
                   {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
                 </button>
+<<<<<<< HEAD
                 
+=======
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
 
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
                   <p className="font-semibold text-gray-900 mb-2">Conseil</p>

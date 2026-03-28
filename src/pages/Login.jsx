@@ -5,16 +5,25 @@ import { loginUser } from "../services/authService";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+<<<<<<< HEAD
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+=======
+  const [role, setRole] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
   const navigate = useNavigate();
 
   const handleForgotPassword = () => {
     alert("Veuillez contacter support@demo.com pour réinitialiser votre mot de passe.");
   };
 
+<<<<<<< HEAD
 // In Login.jsx, update the handleSubmit function:
 
 const handleSubmit = async (e) => {
@@ -81,6 +90,56 @@ const handleSubmit = async (e) => {
     setIsLoading(false);
   }
 };
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // CORRECTION: Ici c'est setIsLoading(true) et non false
+    setIsLoading(true);
+    setError("");
+
+    try {
+      console.log("Tentative de connexion avec:", { email, password, role, rememberMe });
+      
+      const response = await loginUser({ email, password, role, rememberMe });
+      
+      console.log("Réponse reçue:", response);
+
+      // Vérifier si la réponse est réussie
+      if (response.success) {
+        const { token, user } = response;
+
+        // Stocker les informations
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        
+        // Stocker le refresh token si rememberMe est coché
+        if (rememberMe && response.refreshToken) {
+          localStorage.setItem("refreshToken", response.refreshToken);
+        }
+
+        // Rediriger selon le rôle (en minuscules pour correspondre à la BDD)
+        if (user.role === "admin") {
+          navigate("/admin");
+        } else if (user.role === "parent") {
+          navigate("/parent");
+        } else if (user.role === "babysitter") {
+          navigate("/babysitter");
+        } else {
+          // Rôle par défaut
+          navigate("/");
+        }
+      } else {
+        setError(response.message || "Email, mot de passe ou rôle incorrect");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la connexion:", error);
+      setError("Une erreur est survenue lors de la connexion au serveur");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
 
   return (
     <main>
@@ -123,7 +182,11 @@ const handleSubmit = async (e) => {
                     <span>SmartBabyCare</span>
                   </div>
                   
+<<<<<<< HEAD
                   <h2 className="mt-6 text-4xl font-extrabold tracking-tight">BIENVENUE</h2>
+=======
+                  <h2 className="mt-6 text-4xl font-extrabold tracking-tight">WELCOME BACK</h2>
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                   <p className="mt-3 text-white/85 leading-relaxed">
                     Espace sécurisé pour les parents et baby-sitters vérifiés.
                   </p>
@@ -172,7 +235,11 @@ const handleSubmit = async (e) => {
                 )}
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+<<<<<<< HEAD
                   <div className="mt-2 relative">
+=======
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                     <label className="block text-sm">
                       <span className="font-semibold text-gray-800">Email</span>
                       <div className="mt-2 relative">
@@ -193,6 +260,40 @@ const handleSubmit = async (e) => {
                         />
                       </div>
                     </label>
+<<<<<<< HEAD
+=======
+
+                    <label className="block text-sm">
+                      <span className="font-semibold text-gray-800">Rôle</span>
+                      <div className="mt-2 relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users w-4 h-4" aria-hidden="true">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                          </svg>
+                        </div>
+                        <select
+                          name="role"
+                          value={role}
+                          onChange={(e) => setRole(e.target.value)}
+                          className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11 appearance-none"
+                          required
+                        >
+                          <option value="">Sélectionner un rôle</option>
+                          <option value="parent">Parent</option>
+                          <option value="babysitter">Baby-sitter</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down w-4 h-4" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"></path>
+                          </svg>
+                        </div>
+                      </div>
+                    </label>
+>>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
                   </div>
 
                   <label className="block text-sm">
