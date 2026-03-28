@@ -1,7 +1,11 @@
+import Header from "../components/layout/Header";
+import Footer from "../components/Footer";
 function Home() {
     return ( 
      
       <main className="flex-grow" >
+        <Header />
+
         <section className="relative overflow-hidden bg-[url('src/assets/image/photo-page_accueil.jpeg')] 
         bg-cover bg-center"> 
         <div className="absolute inset-0 bg-gradient-to-r from-pink-900/60 via-pink-700/30 to-black/20" > </div>
@@ -27,10 +31,14 @@ function Home() {
                       <input placeholder="Ville, besoin, age..." className="w-full bg-transparent focus:outline-none text-gray-700" type="text"></input>
                     </div>
                     <div className="md:col-span-5 flex gap-3">
+                      <a href="/babysitter" className="w-full">
                       <button className="w-full bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition font-semibold shadow-lg shadow-pink-600/20">
                         Rechercher </button>
+                        </a>
+                       <a href="/register" className="hidden md:inline-flex w-full">
                       <button className="hidden md:inline-flex w-full bg-white text-pink-700 border border-pink-200 px-6 py-3 rounded-xl hover:bg-pink-50 transition font-semibold">
                         S’inscrire</button>
+                        </a>
                     </div>
                   </div>
                 </div>
@@ -121,7 +129,10 @@ function Home() {
                     Notre IA analyse plus de 50 points de données pour garantir que la baby-sitter recommandée correspond parfaitement à la personnalité et aux besoins de votre enfant.</p>
                     <button className="bg-pink-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-pink-700 transition duration-300">Découvrir le Matching IA</button>
                 </div>
-              </section> 
+              </section>
+
+               < Footer />
+            
         </main> 
     ) 
   } 
