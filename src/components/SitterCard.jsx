@@ -2,12 +2,8 @@
 import React from 'react';
 import { MapPin, Star } from 'lucide-react';
 
-<<<<<<< HEAD
 function SitterCard ({ sitter }) {
   
-=======
-const SitterCard = ({ sitter }) => {
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
   const {
     name,
     city,

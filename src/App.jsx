@@ -10,12 +10,11 @@ import ProfilPage from "./pages/ProfilPage";
 import BookingsPage from './pages/BookingsPage';
 import ReviewPage from './pages/ReviewPage';
 import MessagsPage from './pages/MessagsPage';
-<<<<<<< HEAD
+
 import ChatWidget from "./components/ChatWidget";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
-=======
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
+
 function App() {
   return ( 
     <BrowserRouter> 

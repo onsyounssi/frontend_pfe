@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-=======
-// pages/BookingsPage.jsx (version refactorisée avec composants)
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
 import React, { useState } from 'react';
 import BookingHeader from '../components/BookingHeader';
 import ProgressSteps from '../components/ProgressSteps';
 import DateTimeForm from '../components/DateTimeForm';
-<<<<<<< HEAD
 import StepsDetails from '../components/StepsDetails';
 import StepSummary from '../components/StepSummary';
 
@@ -29,16 +24,6 @@ function BookingPage () {
     childrenCount: formData.childrenCount || 2,
     totalPrice: 45
   };
-=======
-
-function BookingsPage (){
-  const [formData, setFormData] = useState({
-    date: '',
-    startTime: '',
-    endTime: ''
-  });
-  const [currentStep, setCurrentStep] = useState(1);
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,7 +33,6 @@ function BookingsPage (){
     }));
   };
 
-<<<<<<< HEAD
   const handleNext = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -112,40 +96,9 @@ function BookingsPage (){
             </button>
           </div>
         </div>
-=======
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Données de réservation:', formData);
-    // Passer à l'étape suivante
-    setCurrentStep(2);
-    // Navigation vers la page suivante
-  };
-
-  const handleBack = () => {
-    console.log('Retour à la page précédente');
-    // Logique de navigation
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <BookingHeader title="Réservation" onBack={handleBack} />
-      
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ProgressSteps currentStep={currentStep} />
-        
-        <DateTimeForm 
-          formData={formData}
-          onChange={handleInputChange}
-          onSubmit={handleSubmit}
-        />
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
       </div>
     </div>
   );
 };
 
-<<<<<<< HEAD
 export default BookingPage;
-=======
-export default BookingsPage;
->>>>>>> 9aaa2e4f4371e16c1af6eb5b2dc729ee0baf5c26
