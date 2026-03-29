@@ -10,6 +10,7 @@ import ProfilPage from "./pages/ProfilPage";
 import BookingsPage from './pages/BookingsPage';
 import ReviewPage from './pages/ReviewPage';
 import MessagsPage from './pages/MessagsPage';
+import RegisterSitter from './pages/RegisterSitter';
 
 import ChatWidget from "./components/ChatWidget";
 import ResetPassword from "./pages/ResetPassword";
@@ -31,6 +32,7 @@ function App() {
     />
 
         <Route path="/login" element={<Login />} /> 
+        <Route path="/register-sitter" element={<RegisterSitter />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminDashboard />} /> 
         <Route path="/parent" element={<ParentDashboard />} /> 

@@ -1,10 +1,14 @@
 // pages/SitterDashboard.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import SitterCard from '../components/SitterCard';
-import { Funnel } from 'lucide-react';
+import { Funnel, Loader } from 'lucide-react';
+import sitterService from '../services/sitterService';
 
 const SitterDashboard = () => {
+  const [sitters, setSitters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     city: '',
     maxPrice: '',
@@ -12,53 +16,48 @@ const SitterDashboard = () => {
     availability: ''
   });
 
-  // Données des baby-sitters
-  const sitters = [
-    {
-      id: 1,
-      name: "Inès R.",
-      city: "Tunis",
-      price: 15,
-      rating: 4.9,
-      reviews: 42,
-      specialty: "Nourrissons",
-      available: true,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Asma T.",
-      city: "nebel",
-      price: 18,
-      rating: 4.8,
-      reviews: 38,
-      specialty: "Multi-enfants",
-      available: true,
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Nessrin K.",
-      city: "Sfax",
-      price: 16,
-      rating: 4.7,
-      reviews: 29,
-      specialty: "Urgences",
-      available: false,
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Samar M.",
-      city: "Soussa",
-      price: 20,
-      rating: 5.0,
-      reviews: 56,
-      specialty: "Nourrissons",
-      available: true,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
+  // Charger les sitters depuis l'API
+  useEffect(() => {
+    loadSitters();
+  }, []);
+
+  const loadSitters = async () => {
+    try {
+      setLoading(true);
+      const data = await sitterService.getAllSitters();
+      // Transformer les données du backend pour correspondre au format attendu par SitterCard
+      const formattedSitters = data.map(sitter => ({
+        id: sitter._id,
+        name: sitter.nom,
+        city: sitter.localisation || 'Non spécifié',
+        price: sitter.tarifHoraire,
+        rating: sitter.noteMoyenne || 0,
+        reviews: sitter.nbAvis || 0,
+        specialty: sitter.specialite || 'Garde d\'enfants',
+        available: checkAvailability(sitter.disponibilites),
+        image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+        description: sitter.description,
+        experience: sitter.experience,
+        langues: sitter.langues,
+        disponibilites: sitter.disponibilites
+      }));
+      setSitters(formattedSitters);
+      setError(null);
+    } catch (err) {
+      console.error('Erreur de chargement:', err);
+      setError('Impossible de charger les baby-sitters. Veuillez réessayer plus tard.');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Vérifier la disponibilité pour aujourd'hui
+  const checkAvailability = (disponibilites) => {
+    if (!disponibilites) return false;
+    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+    const today = days[new Date().getDay()];
+    return disponibilites[today] || false;
+  };
 
   // Gestionnaires de navigation
   const handleSearch = () => {
@@ -78,8 +77,7 @@ const SitterDashboard = () => {
   };
 
   const handleViewProfile = (sitter) => {
-    console.log('Voir le profil de:', sitter.name);
-    // window.location.href = `/sitter/${sitter.id}`;
+    window.location.href = `/profil/${sitter.id}`;
   };
 
   const handleFilterChange = (e) => {
@@ -99,9 +97,35 @@ const SitterDashboard = () => {
     return true;
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-pink-600 mx-auto mb-4" />
+          <p className="text-gray-600">Chargement des baby-sitters...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-md">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={loadSitters}
+            className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <Header 
         logoText="SmartBabyCare"
         onSearchClick={handleSearch}
@@ -112,7 +136,6 @@ const SitterDashboard = () => {
         userName="Mon compte"
       />
 
-      {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">
           Trouvez votre baby-sitter
@@ -126,7 +149,6 @@ const SitterDashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Filtre Ville */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Ville
@@ -141,28 +163,23 @@ const SitterDashboard = () => {
               />
             </div>
 
-            {/* Filtre Prix max */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Prix max
+                Prix max (DNT/h)
               </label>
-              <select
+              <input
+                type="number"
                 name="maxPrice"
                 value={filters.maxPrice}
                 onChange={handleFilterChange}
+                placeholder="Prix maximum"
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              >
-                <option value="">Tous</option>
-                <option value="15">15DNT/h max</option>
-                <option value="20">20DNT/h max</option>
-                <option value="25">25DNT/h max</option>
-              </select>
+              />
             </div>
 
-            {/* Filtre Note min */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Note min
+                Note minimum
               </label>
               <select
                 name="minRating"
@@ -170,14 +187,13 @@ const SitterDashboard = () => {
                 onChange={handleFilterChange}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
               >
-                <option value="">Tous</option>
+                <option value="">Toutes</option>
                 <option value="4.5">4.5+ ⭐</option>
                 <option value="4.7">4.7+ ⭐</option>
                 <option value="4.9">4.9+ ⭐</option>
               </select>
             </div>
 
-            {/* Filtre Disponibilité */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Disponibilité
@@ -189,9 +205,7 @@ const SitterDashboard = () => {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
               >
                 <option value="">Tous</option>
-                <option value="now">Disponible maintenant</option>
-                <option value="today">Aujourd'hui</option>
-                <option value="week">Cette semaine</option>
+                <option value="now">Disponible aujourd'hui</option>
               </select>
             </div>
           </div>
@@ -211,7 +225,7 @@ const SitterDashboard = () => {
               key={sitter.id} 
               sitter={{
                 ...sitter,
-                onViewProfile: handleViewProfile
+                onViewProfile: () => handleViewProfile(sitter)
               }} 
             />
           ))}

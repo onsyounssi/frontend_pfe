@@ -109,7 +109,7 @@ function Register() {
       
       if (response.success) {
         // Success message
-        alert(response.message || "Inscription réussie !");
+        
         
         // Stocker les informations de l'utilisateur dans localStorage si nécessaire
         if (response.user) {

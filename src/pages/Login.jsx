@@ -12,7 +12,7 @@ function Login() {
   const navigate = useNavigate();
 
   const handleForgotPassword = () => {
-    alert("Veuillez contacter support@demo.com pour réinitialiser votre mot de passe.");
+   navigate("/forgot-password");
   };
 
 // In Login.jsx, update the handleSubmit function:
@@ -248,6 +248,7 @@ const handleSubmit = async (e) => {
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                         <path d="M12 17h.01"></path>
                       </svg>
+                      
                       <span>Mot de passe oublié ?</span>
                     </button>
                   </div>

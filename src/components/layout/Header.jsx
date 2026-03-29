@@ -7,7 +7,7 @@ function Header(){
             </h1>
           <nav className="hidden md:flex space-x-8">
             <a href="/" className="text-gray-600 hover:text-pink-600">Comment ça  marche </a>
-            <a href="#" className="text-gray-600 hover:text-pink-600">Devenir Sitter</a>
+            <a href="/register-sitter" className="text-gray-600 hover:text-pink-600">Devenir Sitter</a>
             <a href="/login" className="text-gray-600 hover:text-pink-600">Connexion</a>
           </nav>
           <a href="/reservation">
