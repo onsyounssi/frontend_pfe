@@ -65,7 +65,7 @@ const BabysitterForm = ({ initialData, onSubmit, onCancel }) => {
             ))}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Note (0-5)
@@ -83,7 +83,7 @@ const BabysitterForm = ({ initialData, onSubmit, onCancel }) => {
           />
         </div>
       </div>
-      
+
       <div className="flex gap-3 mt-6">
         <button
           type="button"
@@ -92,7 +92,7 @@ const BabysitterForm = ({ initialData, onSubmit, onCancel }) => {
         >
           Annuler
         </button>
-        
+
         <button
           type="submit"
           className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition"

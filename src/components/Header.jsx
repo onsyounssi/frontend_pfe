@@ -18,7 +18,7 @@ const Header = ({
         </h1>
         
         <nav className="hidden md:flex space-x-8">
-          <a href="/babysitter">
+          <a href="/baby-sitter">
           <button 
             onClick={onSearchClick}
             className="text-gray-600 hover:text-pink-600 transition"

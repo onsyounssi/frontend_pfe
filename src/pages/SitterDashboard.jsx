@@ -113,7 +113,7 @@ const SitterDashboard = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-lg shadow-md">
           <p className="text-red-600 mb-4">{error}</p>
-          <button 
+          <button
             onClick={loadSitters}
             className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700"
           >
@@ -126,7 +126,7 @@ const SitterDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
+      <Header
         logoText="SmartBabyCare"
         onSearchClick={handleSearch}
         onBookingsClick={handleBookings}
@@ -221,12 +221,12 @@ const SitterDashboard = () => {
         {/* Liste des baby-sitters */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSitters.map((sitter) => (
-            <SitterCard 
-              key={sitter.id} 
+            <SitterCard
+              key={sitter.id}
               sitter={{
                 ...sitter,
                 onViewProfile: () => handleViewProfile(sitter)
-              }} 
+              }}
             />
           ))}
         </div>

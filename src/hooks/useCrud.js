@@ -10,12 +10,12 @@ export const useCrud = (initialParents, initialBabysitters) => {
 
   const getFilteredItems = () => {
     if (activeTab === 'parents') {
-      return parents.filter(item => 
+      return parents.filter(item =>
         item.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.ville.toLowerCase().includes(searchTerm.toLowerCase())
       );
     } else {
-      return babysitters.filter(item => 
+      return babysitters.filter(item =>
         item.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.specialite.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -45,8 +45,8 @@ export const useCrud = (initialParents, initialBabysitters) => {
   const handleSubmit = (formData) => {
     if (activeTab === 'parents') {
       if (editingItem) {
-        setParents(parents.map(item => 
-          item.id === editingItem.id 
+        setParents(parents.map(item =>
+          item.id === editingItem.id
             ? { ...item, ...formData }
             : item
         ));
@@ -56,17 +56,17 @@ export const useCrud = (initialParents, initialBabysitters) => {
       }
     } else {
       if (editingItem) {
-        setBabysitters(babysitters.map(item => 
-          item.id === editingItem.id 
+        setBabysitters(babysitters.map(item =>
+          item.id === editingItem.id
             ? { ...item, ...formData, note: parseFloat(formData.note) }
             : item
         ));
       } else {
         const newId = Math.max(...babysitters.map(b => b.id), 200) + 1;
-        setBabysitters([...babysitters, { 
-          id: newId, 
-          ...formData, 
-          note: parseFloat(formData.note) 
+        setBabysitters([...babysitters, {
+          id: newId,
+          ...formData,
+          note: parseFloat(formData.note)
         }]);
       }
     }

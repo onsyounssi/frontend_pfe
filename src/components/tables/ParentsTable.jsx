@@ -21,7 +21,7 @@ const ParentsTable = ({ parents, onEdit, onDelete }) => {
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{parent.ville}</td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{parent.statut}</td>
             <td className="px-6 py-3">
-              <ActionButtons 
+              <ActionButtons
                 onEdit={() => onEdit(parent)}
                 onDelete={() => onDelete(parent.id)}
               />

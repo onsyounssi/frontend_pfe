@@ -16,25 +16,25 @@ export const registerUser = async (userData) => {
 };
 export const loginUser = async (credentials) => {
   try {
-    
+
     // Option 1: If your backend uses /users/login
     const response = await axios.post(`${API_URL}/login`, {
       email: credentials.email,
       password: credentials.password
     });
-    
+
     // Option 2: If your backend uses /login
     // const response = await axios.post(`${API_URL}/login`, {
     //   email: credentials.email,
     //   password: credentials.password
     // });
-    
+
     // Option 3: If your backend uses /users/login
     // const response = await axios.post(`${API_URL}/users/login`, {
     //   email: credentials.email,
     //   password: credentials.password
     // });
-    
+
     return {
       success: true,
       data: response.data,
@@ -42,7 +42,7 @@ export const loginUser = async (credentials) => {
     };
   } catch (error) {
     console.error('Login error:', error.response?.data || error.message);
-    
+
     if (error.response) {
       return {
         success: false,
@@ -50,7 +50,7 @@ export const loginUser = async (credentials) => {
         status: error.response.status
       };
     }
-    
+
     return {
       success: false,
       message: 'Erreur de connexion au serveur'

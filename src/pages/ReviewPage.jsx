@@ -44,41 +44,41 @@ const ReviewPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header title="Laisser un avis" />
-      
+
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-xl shadow-sm p-8">
-          
-          <NannyInfo 
+
+          <NannyInfo
             name="Inès R."
             date="12 février 2024"
             imageUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
           />
 
-          <RatingStars 
+          <RatingStars
             rating={rating}
             onRatingChange={setRating}
           />
 
-          <PositiveTags 
+          <PositiveTags
             tags={positiveTags}
             selectedTags={selectedTags}
             onTagClick={handleTagClick}
           />
 
-          <CommentBox 
+          <CommentBox
             value={comment}
             onChange={setComment}
             placeholder="Partagez votre expérience..."
           />
 
           <div className="flex items-center gap-4">
-            <Button 
+            <Button
               variant="secondary"
               onClick={() => console.log('Avis ignoré')}
             >
               Passer
             </Button>
-            <Button 
+            <Button
               variant="primary"
               onClick={handlePublish}
               disabled={rating === 0}

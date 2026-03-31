@@ -4,10 +4,10 @@ import { registerUser } from "../services/authService";
 
 function Register() {
   const navigate = useNavigate(); // Pour la redirection
-  
+
   const [formData, setFormData] = useState({
-    lastName: '',      
-    firstName: '',     
+    lastName: '',
+    firstName: '',
     phone: '',
     email: '',
     role: '',
@@ -24,9 +24,9 @@ function Register() {
     const { name, value, type, checked } = e.target;
 
     // Empêche de taper autre chose que des chiffres et le + pour le champ phone
-  if (name === 'phone' && value !== '' && !/^[0-9+]*$/.test(value)) {
-    return; 
-  }
+    if (name === 'phone' && value !== '' && !/^[0-9+]*$/.test(value)) {
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -45,30 +45,30 @@ function Register() {
     const newErrors = {};
 
     if (!formData.lastName.trim()) newErrors.lastName = 'Le nom est requis';
-  if (!formData.firstName.trim()) newErrors.firstName = 'Le prénom est requis';
+    if (!formData.firstName.trim()) newErrors.firstName = 'Le prénom est requis';
 
-  // Validation du téléphone Tunisie
-  const phoneValue = formData.phone.trim();
-  // RegEx pour : Optionnel (+216 ou 00216) suivi de exactement 8 chiffres
-  const tunisianPhoneRegex = /^(?:\+216|00216)?[24579]\d{7}$/;
+    // Validation du téléphone Tunisie
+    const phoneValue = formData.phone.trim();
+    // RegEx pour : Optionnel (+216 ou 00216) suivi de exactement 8 chiffres
+    const tunisianPhoneRegex = /^(?:\+216|00216)?[24579]\d{7}$/;
 
-  if (!phoneValue) {
-    newErrors.phone = 'Le téléphone est requis';
-  } else if (phoneValue.replace(/^(?:\+216|00216)/, '').length !== 8) {
-    newErrors.phone = 'Le numéro doit contenir exactement 8 chiffres';
-  } else if (!tunisianPhoneRegex.test(phoneValue)) {
-    newErrors.phone = 'Format de téléphone tunisien invalide (ex: 20123456)';
-  }
+    if (!phoneValue) {
+      newErrors.phone = 'Le téléphone est requis';
+    } else if (phoneValue.replace(/^(?:\+216|00216)/, '').length !== 8) {
+      newErrors.phone = 'Le numéro doit contenir exactement 8 chiffres';
+    } else if (!tunisianPhoneRegex.test(phoneValue)) {
+      newErrors.phone = 'Format de téléphone tunisien invalide (ex: 20123456)';
+    }
 
 
-   /* if (!formData.phone.trim()) {
-    newErrors.phone = 'Le téléphone est requis';
-  } else if (formData.phone.length !== 8) { // Condition des 8 caractères
-    newErrors.phone = 'Le numéro doit contenir au moins 8 caractères';
-  } else if (!/^[0-9+,\-\s]+$/.test(formData.phone)) {
-    newErrors.phone = 'Format de téléphone invalide';
-  }
-*/
+    /* if (!formData.phone.trim()) {
+     newErrors.phone = 'Le téléphone est requis';
+   } else if (formData.phone.length !== 8) { // Condition des 8 caractères
+     newErrors.phone = 'Le numéro doit contenir au moins 8 caractères';
+   } else if (!/^[0-9+,\-\s]+$/.test(formData.phone)) {
+     newErrors.phone = 'Format de téléphone invalide';
+   }
+ */
     if (!formData.email.trim()) {
       newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -98,10 +98,10 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Reset server error
     setServerError('');
-    
+
     // First validate the form
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -110,7 +110,7 @@ function Register() {
     }
 
     setIsLoading(true);
-    
+
     try {
       // Prepare data for API
       const userData = {
@@ -122,28 +122,28 @@ function Register() {
         password: formData.password,
         acceptTerms: formData.acceptTerms
       };
-      
+
       console.log('Sending registration data:', userData);
-      
+
       const response = await registerUser(userData);
-      
+
       console.log('Registration response:', response);
-      
+
       if (response.success) {
         // Success message
-        
-        
+
+
         // Stocker les informations de l'utilisateur dans localStorage si nécessaire
         if (response.user) {
           localStorage.setItem('user', JSON.stringify(response.user));
           localStorage.setItem('token', response.token); // Si vous avez un token
         }
-        
-        // Rediriger vers la page d'accueil après 1 seconde
+
+        // Rediriger vers la page de complétion de profil après 1 seconde
         setTimeout(() => {
-          navigate('/'); // Redirection vers la page d'accueil
+          navigate('/complete-profile'); // Redirection modifiée pour l'onboarding
         }, 1000);
-        
+
         // Reset form on success
         setFormData({
           lastName: '',
@@ -160,12 +160,12 @@ function Register() {
       }
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
-      
+
       // Detailed error handling
       if (error.response) {
         console.error('Error response data:', error.response.data);
         console.error('Error response status:', error.response.status);
-        
+
         // Handle specific error cases
         if (error.response.status === 400) {
           setServerError(error.response.data.message || 'Données invalides. Vérifiez vos informations.');
@@ -215,7 +215,7 @@ function Register() {
                 <circle cx="440" cy="190" r="150" fill="url(#rb2)"></circle>
                 <circle cx="340" cy="460" r="170" fill="url(#rb3)"></circle>
               </svg>
-              
+
               <div className="relative">
                 <div className="inline-flex items-center space-x-2 bg-white/15 border border-white/20 px-3 py-1.5 rounded-full text-xs font-semibold">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles w-3.5 h-3.5" aria-hidden="true">
@@ -226,10 +226,10 @@ function Register() {
                   </svg>
                   <span>SmartBabyCare</span>
                 </div>
-                
+
                 <h2 className="mt-6 text-4xl font-extrabold tracking-tight">CRÉER UN COMPTE</h2>
                 <p className="mt-3 text-white/85 leading-relaxed">Créez un compte parent ou baby-sitter en quelques secondes.</p>
-                
+
                 <div className="mt-8 space-y-3 text-sm text-white/85">
                   <p className="flex items-center space-x-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check w-4 h-4" aria-hidden="true">
@@ -321,7 +321,7 @@ function Register() {
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-4 h-4" aria-hidden="true">
                           <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
-                          
+
                         </svg>
                       </div>
                       <input
@@ -442,8 +442,8 @@ function Register() {
                     />
                     <span className="text-sm text-gray-600">J’accepte les conditions</span>
                   </label>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => navigate('/login')} // Redirection vers login
                     className="text-sm text-gray-700 hover:text-gray-900 font-semibold"
                   >
@@ -451,17 +451,16 @@ function Register() {
                   </button>
                 </div>
                 {errors.acceptTerms && <p className="text-red-500 text-xs -mt-3">{errors.acceptTerms}</p>}
-                 
+
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-3.5 rounded-2xl font-semibold text-white shadow-lg transition ${
-                    isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
-                  }`}
+                  className={`w-full py-3.5 rounded-2xl font-semibold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
+                    }`}
                 >
                   {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
                 </button>
-                
+
 
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
                   <p className="font-semibold text-gray-900 mb-2">Conseil</p>

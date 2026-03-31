@@ -14,81 +14,81 @@ function Login() {
   //const navigate = useNavigate();
 
   const handleForgotPassword = () => {
-   navigate("/forgot-password");
+    navigate("/forgot-password");
   };
 
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  setIsLoading(true);
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  //Validation de base : on vérifie que l'utilisateur a saisi ses infos
-  if (!email || !password) {
-    setError("Veuillez remplir tous les champs");
-    setIsLoading(false);
-    return;
-  }
+    setIsLoading(true);
+    setError("");
 
-  try {
-    console.log("Tentative de connexion...", { email, password });
-    
-    // Appel au service d'authentification
-    const response = await loginUser({ email, password, rememberMe });
-    
-    console.log("Réponse reçue:", response);
-
-    //  Vérification de la réussite de la réponse
-    if (response && response.success && response.data) {
-      const { token, user } = response.data;
- 
-      if (!token || !user) {
-        setError("Données de connexion incomplétes reçues du serveur");
-        setIsLoading(false);
-        return;
-      }
-
-      // --- ENREGISTREMENT DU COMPTE (STOCKAGE) ---
-     // Le compte est considéré comme "enregistré" localement ici, 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      
-      
-      if (rememberMe && response.refreshToken) {
-        localStorage.setItem("refreshToken", response.refreshToken);
-      }
-
-      //Logique de redirection selon le rôle de l'utilisateur
-      const role = user.role?.toLowerCase();
-      console.log("Connexion réussie. Rôle :", role);
-
-      switch(role) {
-        case "admin":
-          navigate("/admin");
-          break;
-        case "parente":
-          navigate("/parente");
-          break;
-        case "baby-sitter":
-          navigate("/baby-sitter");
-          break;
-        default:
-          navigate("/");
-      }
-    } else {
-      // Message en cas d'identifiants incorrects
-      setError(response?.message || "Email, mot de passe ou rôle incorrect");
+    //Validation de base : on vérifie que l'utilisateur a saisi ses infos
+    if (!email || !password) {
+      setError("Veuillez remplir tous les champs");
+      setIsLoading(false);
+      return;
     }
 
-    //  On log l'erreur en console et on affiche un texte simple à l'utilisateur
-  } catch (error) {
-    console.error("Erreur de connexion:", error.response?.data || error.message);
-    setError("Impossible de contacter le serveur. Veuillez réessayer plus tard.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      console.log("Tentative de connexion...", { email, password });
+
+      // Appel au service d'authentification
+      const response = await loginUser({ email, password, rememberMe });
+
+      console.log("Réponse reçue:", response);
+
+      //  Vérification de la réussite de la réponse
+      if (response && response.success && response.data) {
+        const { token, user } = response.data;
+
+        if (!token || !user) {
+          setError("Données de connexion incomplétes reçues du serveur");
+          setIsLoading(false);
+          return;
+        }
+
+        // --- ENREGISTREMENT DU COMPTE (STOCKAGE) ---
+        // Le compte est considéré comme "enregistré" localement ici, 
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+
+
+        if (rememberMe && response.refreshToken) {
+          localStorage.setItem("refreshToken", response.refreshToken);
+        }
+
+        //Logique de redirection selon le rôle de l'utilisateur
+        const role = user.role?.toLowerCase();
+        console.log("Connexion réussie. Rôle :", role);
+
+        switch (role) {
+          case "admin":
+            navigate("/admin");
+            break;
+          case "parente":
+            navigate("/parente");
+            break;
+          case "baby-sitter":
+            navigate("/baby-sitter");
+            break;
+          default:
+            navigate("/");
+        }
+      } else {
+        // Message en cas d'identifiants incorrects
+        setError(response?.message || "Email, mot de passe ou rôle incorrect");
+      }
+
+      //  On log l'erreur en console et on affiche un texte simple à l'utilisateur
+    } catch (error) {
+      console.error("Erreur de connexion:", error.response?.data || error.message);
+      setError("Impossible de contacter le serveur. Veuillez réessayer plus tard.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <main>
@@ -96,7 +96,7 @@ const handleSubmit = async (e) => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2">
-              
+
               {/* Partie gauche avec le dégradé */}
               <div className="relative p-10 text-white bg-gradient-to-br from-pink-500 via-fuchsia-500 to-indigo-500">
                 <svg viewBox="0 0 600 600" aria-hidden="true" className="absolute inset-0 w-full h-full" preserveAspectRatio="none" style={{ opacity: 0.28 }}>
@@ -119,7 +119,7 @@ const handleSubmit = async (e) => {
                   <circle cx="440" cy="190" r="150" fill="url(#b2)"></circle>
                   <circle cx="340" cy="460" r="170" fill="url(#b3)"></circle>
                 </svg>
-                
+
                 <div className="relative">
                   <div className="inline-flex items-center space-x-2 bg-white/15 border border-white/20 px-3 py-1.5 rounded-full text-xs font-semibold">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles w-3.5 h-3.5" aria-hidden="true">
@@ -130,12 +130,12 @@ const handleSubmit = async (e) => {
                     </svg>
                     <span>SmartBabyCare</span>
                   </div>
-                  
+
                   <h2 className="mt-6 text-4xl font-extrabold tracking-tight">BIENVENUE</h2>
                   <p className="mt-3 text-white/85 leading-relaxed">
                     Espace sécurisé pour les parents et baby-sitters vérifiés.
                   </p>
-                  
+
                   <div className="mt-8 space-y-3 text-sm text-white/85">
                     <p className="flex items-center space-x-2">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check w-4 h-4" aria-hidden="true">
@@ -224,12 +224,11 @@ const handleSubmit = async (e) => {
                     </div>
                   </label>
 
-                  <button 
+                  <button
                     type="submit"
                     disabled={isLoading}
-                    className={`w-full py-3.5 rounded-2xl font-semibold text-white shadow-lg transition ${
-                      isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
-                    }`}
+                    className={`w-full py-3.5 rounded-2xl font-semibold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
+                      }`}
                   >
                     {isLoading ? 'Connexion en cours...' : 'Se connecter'}
                   </button>
@@ -245,7 +244,7 @@ const handleSubmit = async (e) => {
                       />
                       <span>Rester connecté</span>
                     </label>
-                    
+
                     <button
                       type="button"
                       onClick={handleForgotPassword}
@@ -256,7 +255,7 @@ const handleSubmit = async (e) => {
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                         <path d="M12 17h.01"></path>
                       </svg>
-                      
+
                       <span>Mot de passe oublié ?</span>
                     </button>
                   </div>
@@ -293,5 +292,5 @@ const handleSubmit = async (e) => {
     </main>
   );
 }
-        
+
 export default Login;

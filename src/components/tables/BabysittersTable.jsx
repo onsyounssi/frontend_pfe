@@ -21,7 +21,7 @@ const BabysittersTable = ({ babysitters, onEdit, onDelete }) => {
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{babysitter.specialite}</td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{babysitter.note}</td>
             <td className="px-6 py-3">
-              <ActionButtons 
+              <ActionButtons
                 onEdit={() => onEdit(babysitter)}
                 onDelete={() => onDelete(babysitter.id)}
               />
