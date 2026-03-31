@@ -6,7 +6,8 @@ function Register() {
   const navigate = useNavigate(); // Pour la redirection
   
   const [formData, setFormData] = useState({
-    fullName: '',
+    lastName: '',      
+    firstName: '',     
     phone: '',
     email: '',
     role: '',
@@ -21,6 +22,11 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Empêche de taper autre chose que des chiffres et le + pour le champ phone
+  if (name === 'phone' && value !== '' && !/^[0-9+]*$/.test(value)) {
+    return; 
+  }
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -38,16 +44,31 @@ function Register() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Le nom complet est requis';
-    }
+    if (!formData.lastName.trim()) newErrors.lastName = 'Le nom est requis';
+  if (!formData.firstName.trim()) newErrors.firstName = 'Le prénom est requis';
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Le téléphone est requis';
-    } else if (!/^[0-9+\-\s]+$/.test(formData.phone)) {
-      newErrors.phone = 'Format de téléphone invalide';
-    }
+  // Validation du téléphone Tunisie
+  const phoneValue = formData.phone.trim();
+  // RegEx pour : Optionnel (+216 ou 00216) suivi de exactement 8 chiffres
+  const tunisianPhoneRegex = /^(?:\+216|00216)?[24579]\d{7}$/;
 
+  if (!phoneValue) {
+    newErrors.phone = 'Le téléphone est requis';
+  } else if (phoneValue.replace(/^(?:\+216|00216)/, '').length !== 8) {
+    newErrors.phone = 'Le numéro doit contenir exactement 8 chiffres';
+  } else if (!tunisianPhoneRegex.test(phoneValue)) {
+    newErrors.phone = 'Format de téléphone tunisien invalide (ex: 20123456)';
+  }
+
+
+   /* if (!formData.phone.trim()) {
+    newErrors.phone = 'Le téléphone est requis';
+  } else if (formData.phone.length !== 8) { // Condition des 8 caractères
+    newErrors.phone = 'Le numéro doit contenir au moins 8 caractères';
+  } else if (!/^[0-9+,\-\s]+$/.test(formData.phone)) {
+    newErrors.phone = 'Format de téléphone invalide';
+  }
+*/
     if (!formData.email.trim()) {
       newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -93,7 +114,8 @@ function Register() {
     try {
       // Prepare data for API
       const userData = {
-        fullName: formData.fullName,
+        lastName: formData.lastName,
+        firstName: formData.firstName,
         phone: formData.phone,
         email: formData.email,
         role: formData.role,
@@ -124,7 +146,8 @@ function Register() {
         
         // Reset form on success
         setFormData({
-          fullName: '',
+          lastName: '',
+          firstName: '',
           phone: '',
           email: '',
           role: '',
@@ -149,7 +172,9 @@ function Register() {
         } else if (error.response.status === 409) {
           setServerError('Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.');
         } else if (error.response.status === 500) {
-          setServerError('Erreur serveur. Veuillez réessayer plus tard.');
+          // Si le serveur envoie un message d'erreur spécifique (comme pour le téléphone)
+          const serverMsg = error.response.data?.error || error.response.data?.message;
+          setServerError(serverMsg || 'Erreur serveur. Veuillez réessayer plus tard.');
         } else {
           setServerError(error.response.data?.message || 'Une erreur est survenue lors de l\'inscription');
         }
@@ -250,7 +275,7 @@ function Register() {
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="block text-sm">
-                    <span className="font-semibold text-gray-800">Nom complet</span>
+                    <span className="font-semibold text-gray-800">Nom </span>
                     <div className="mt-2 relative">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-4 h-4" aria-hidden="true">
@@ -259,30 +284,51 @@ function Register() {
                         </svg>
                       </div>
                       <input
-                        name="fullName"
-                        value={formData.fullName}
+                        name="lastName"
+                        value={formData.lastName}
                         onChange={handleChange}
-                        placeholder="Ex: Sarah Martin"
-                        className={`w-full rounded-2xl border ${errors.fullName ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
+                        placeholder="Votre nom"
+                        className={`w-full rounded-2xl border ${errors.lastName ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                         type="text"
                       />
                     </div>
-                    {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                  </label>
+                  <label className="block text-sm">
+                    <span className="font-semibold text-gray-800"> Prénom </span>
+                    <div className="mt-2 relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-4 h-4" aria-hidden="true">
+                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                      </div>
+                      <input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        placeholder="Votre prénom"
+                        className={`w-full rounded-2xl border ${errors.firstName ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
+                        type="text"
+                      />
+                    </div>
+                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                   </label>
 
-                  <label className="block text-sm">
+                  <label className="block text-sm mt-4">
                     <span className="font-semibold text-gray-800">Téléphone</span>
                     <div className="mt-2 relative">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-4 h-4" aria-hidden="true">
                           <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
+                          
                         </svg>
                       </div>
                       <input
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+33 6 00 00 00 00"
+                        placeholder="+216 00 000 000"
                         className={`w-full rounded-2xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                         type="text"
                       />
@@ -304,7 +350,7 @@ function Register() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="parent@exemple.com"
+                      placeholder="votre@email.com"
                       className={`w-full rounded-2xl border ${errors.email ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                       type="email"
                     />
@@ -328,8 +374,8 @@ function Register() {
                       className={`w-full appearance-none rounded-2xl border ${errors.role ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                     >
                       <option value="" disabled>Choisir…</option>
-                      <option value="parent">Parent</option>
-                      <option value="babysitter">Baby-sitter</option>
+                      <option value="parente">Parente</option>
+                      <option value="baby-sitter">Baby-sitter</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye w-4 h-4 rotate-90" aria-hidden="true">
@@ -355,7 +401,7 @@ function Register() {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="••••••••"
+                        placeholder="votre mot de passe"
                         className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                         type="password"
                       />
@@ -376,7 +422,7 @@ function Register() {
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        placeholder="••••••••"
+                        placeholder="confirmez votre mot de passe"
                         className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
                         type="password"
                       />

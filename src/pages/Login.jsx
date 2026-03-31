@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const handleForgotPassword = () => {
    navigate("/forgot-password");
   };
 
-// In Login.jsx, update the handleSubmit function:
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -23,7 +24,7 @@ const handleSubmit = async (e) => {
   setIsLoading(true);
   setError("");
 
-  // Add basic validation
+  //Validation de base : on vérifie que l'utilisateur a saisi ses infos
   if (!email || !password) {
     setError("Veuillez remplir tous les champs");
     setIsLoading(false);
@@ -31,52 +32,59 @@ const handleSubmit = async (e) => {
   }
 
   try {
-    console.log("Tentative de connexion avec:", { email, password });
+    console.log("Tentative de connexion...", { email, password });
     
+    // Appel au service d'authentification
     const response = await loginUser({ email, password, rememberMe });
     
     console.log("Réponse reçue:", response);
 
-    // Check if the response was successful
-    if (response.success && response.data) {
+    //  Vérification de la réussite de la réponse
+    if (response && response.success && response.data) {
       const { token, user } = response.data;
-
-      // Validate that we received all necessary data
+ 
       if (!token || !user) {
-        setError("Données de connexion invalides reçues du serveur");
+        setError("Données de connexion incomplétes reçues du serveur");
+        setIsLoading(false);
         return;
       }
 
-      // Store the information
+      // --- ENREGISTREMENT DU COMPTE (STOCKAGE) ---
+     // Le compte est considéré comme "enregistré" localement ici, 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
-      // Store the refresh token if rememberMe is checked
+      
       if (rememberMe && response.refreshToken) {
         localStorage.setItem("refreshToken", response.refreshToken);
       }
 
-      // Redirection logic
+      //Logique de redirection selon le rôle de l'utilisateur
       const role = user.role?.toLowerCase();
+      console.log("Connexion réussie. Rôle :", role);
+
       switch(role) {
         case "admin":
           navigate("/admin");
           break;
-        case "parent":
-          navigate("/parent");
+        case "parente":
+          navigate("/parente");
           break;
-        case "babysitter":
-          navigate("/babysitter");
+        case "baby-sitter":
+          navigate("/baby-sitter");
           break;
         default:
           navigate("/");
       }
     } else {
-      // Handle unsuccessful login
-      setError(response.message || "Email, mot de passe ou rôle incorrect");
+      // Message en cas d'identifiants incorrects
+      setError(response?.message || "Email, mot de passe ou rôle incorrect");
     }
+
+    //  On log l'erreur en console et on affiche un texte simple à l'utilisateur
   } catch (error) {
-    setError("Une erreur est survenue lors de la connexion au serveur",error);
+    console.error("Erreur de connexion:", error.response?.data || error.message);
+    setError("Impossible de contacter le serveur. Veuillez réessayer plus tard.");
   } finally {
     setIsLoading(false);
   }
@@ -152,7 +160,7 @@ const handleSubmit = async (e) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-semibold">
-                      Login Account
+                      Compte de connexion
                     </p>
                     <p className="text-lg font-bold text-gray-900 mt-2">SmartBabyCare</p>
                   </div>
@@ -186,7 +194,7 @@ const handleSubmit = async (e) => {
                           name="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="parent@exemple.com"
+                          placeholder="votre@email.com"
                           className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11"
                           type="email"
                           required
@@ -235,7 +243,7 @@ const handleSubmit = async (e) => {
                         className="rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-offset-0"
                         type="checkbox"
                       />
-                      <span>Se souvenir de moi</span>
+                      <span>Rester connecté</span>
                     </label>
                     
                     <button

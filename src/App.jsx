@@ -35,8 +35,8 @@ function App() {
         <Route path="/register-sitter" element={<RegisterSitter />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminDashboard />} /> 
-        <Route path="/parent" element={<ParentDashboard />} /> 
-        <Route path="/babysitter" element={<SitterDashboard />} />
+        <Route path="/parente" element={<ParentDashboard />} /> 
+        <Route path="/baby-sitter" element={<SitterDashboard />} />
         <Route path="/profil/:id" element={<ProfilPage />} />
         <Route path="/reservation" element={<BookingsPage />} />
         <Route path="/reviews" element={<ReviewPage />} />
