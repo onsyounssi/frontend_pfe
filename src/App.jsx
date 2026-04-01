@@ -17,6 +17,8 @@ import ChatWidget from "./components/ChatWidget";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 
+import FindSitters from './pages/FindSitters';
+
 function App() {
   return (
     <BrowserRouter>
@@ -38,6 +40,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/parente" element={<ParentDashboard />} />
         <Route path="/baby-sitter" element={<SitterDashboard />} />
+        <Route path="/recherche-sitters" element={<FindSitters />} />
         <Route path="/profil/:id" element={<ProfilPage />} />
         <Route path="/reservation" element={<BookingsPage />} />
         <Route path="/reviews" element={<ReviewPage />} />

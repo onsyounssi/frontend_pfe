@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/parent/Header';
 import bookingService from '../services/bookingService';
 
 function ParentDashboard() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,6 +41,23 @@ function ParentDashboard() {
   const formatTime = (isoString) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (window.confirm('Voulez-vous vraiment annuler cette réservation ?')) {
+      try {
+        await fetch(`/api/Bookings/${bookingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statut: 'cancelled' })
+        });
+        // Rafraîchir les réservations
+        const data = await bookingService.getAllBookings();
+        setBookings(data || []);
+      } catch (err) {
+        console.error("Erreur d'annulation", err);
+      }
+    }
   };
 
   return (
@@ -125,11 +144,17 @@ function ParentDashboard() {
                     <p className="text-sm border flex font-bold w-[max-content] rounded p-1 text-gray-600 mt-2">{booking.montantTotale || 0} DNT</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-sm font-semibold">
-                      Détails
+                    <button
+                      onClick={() => handleCancelBooking(booking._id)}
+                      className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition text-sm font-semibold"
+                    >
+                      Annuler
                     </button>
                     {booking.statut === 'confirmed' && (
-                      <button className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition text-sm font-semibold">
+                      <button
+                        onClick={() => navigate('/chat')}
+                        className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition text-sm font-semibold"
+                      >
                         Contacter
                       </button>
                     )}
@@ -171,7 +196,10 @@ function ParentDashboard() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-gray-900">{booking.montantTotale || 0} DNT</span>
-                    <button className="px-4 py-2 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition text-sm font-semibold shadow-sm">
+                    <button
+                      onClick={() => navigate('/reviews')}
+                      className="px-4 py-2 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition text-sm font-semibold shadow-sm"
+                    >
                       Revoir & Evaluer
                     </button>
                   </div>

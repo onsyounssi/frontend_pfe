@@ -1,244 +1,169 @@
-// pages/SitterDashboard.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
-import SitterCard from '../components/SitterCard';
-import { Funnel, Loader } from 'lucide-react';
-import sitterService from '../services/sitterService';
+import bookingService from '../services/bookingService';
+import { useNavigate } from 'react-router-dom';
 
-const SitterDashboard = () => {
-  const [sitters, setSitters] = useState([]);
+function SitterDashboard() {
+  const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    city: '',
-    maxPrice: '',
-    minRating: '',
-    availability: ''
-  });
+  const [mySitterId, setMySitterId] = useState(null);
 
-  // Charger les sitters depuis l'API
   useEffect(() => {
-    loadSitters();
+    // Obtenir l'id du sitter connecté
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setMySitterId(user.id || user._id);
+    }
   }, []);
 
-  const loadSitters = async () => {
+  useEffect(() => {
+    if (mySitterId) {
+      fetchBookings();
+    } else {
+      setLoading(false); // Pas d'ID ? Pas la peine de chercher
+    }
+  }, [mySitterId]);
+
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await sitterService.getAllSitters();
-      // Transformer les données du backend pour correspondre au format attendu par SitterCard
-      const formattedSitters = data.map(sitter => ({
-        id: sitter._id,
-        name: sitter.nom,
-        city: sitter.localisation || 'Non spécifié',
-        price: sitter.tarifHoraire,
-        rating: sitter.noteMoyenne || 0,
-        reviews: sitter.nbAvis || 0,
-        specialty: sitter.specialite || 'Garde d\'enfants',
-        available: checkAvailability(sitter.disponibilites),
-        image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
-        description: sitter.description,
-        experience: sitter.experience,
-        langues: sitter.langues,
-        disponibilites: sitter.disponibilites
-      }));
-      setSitters(formattedSitters);
-      setError(null);
+      const data = await bookingService.getAllBookings();
+      // Filtrer les bookings où sitterId correspond à ce baby-sitter
+      const myBookings = data.filter(b => b.sitterId === mySitterId);
+      setBookings(myBookings);
     } catch (err) {
-      console.error('Erreur de chargement:', err);
-      setError('Impossible de charger les baby-sitters. Veuillez réessayer plus tard.');
+      console.error(err);
+      setError("Impossible de charger vos demandes de garde.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Vérifier la disponibilité pour aujourd'hui
-  const checkAvailability = (disponibilites) => {
-    if (!disponibilites) return false;
-    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
-    const today = days[new Date().getDay()];
-    return disponibilites[today] || false;
+  const handleUpdateStatus = async (bookingId, newStatus) => {
+    try {
+      await fetch(`/api/Bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: newStatus })
+      });
+      alert(`La demande a été mise à jour ! (${newStatus})`);
+      fetchBookings();
+    } catch (err) {
+      alert("Erreur réseau");
+    }
   };
 
-  // Gestionnaires de navigation
-  const handleSearch = () => {
-    console.log('Navigation vers recherche');
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const handleBookings = () => {
-    console.log('Navigation vers réservations');
+  const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleMessages = () => {
-    console.log('Navigation vers messages');
-  };
-
-  const handleAccount = () => {
-    console.log('Navigation vers compte');
-  };
-
-  const handleViewProfile = (sitter) => {
-    window.location.href = `/profil/${sitter.id}`;
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Filtrage des sitters
-  const filteredSitters = sitters.filter(sitter => {
-    if (filters.city && !sitter.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
-    if (filters.maxPrice && sitter.price > parseInt(filters.maxPrice)) return false;
-    if (filters.minRating && sitter.rating < parseFloat(filters.minRating)) return false;
-    if (filters.availability === 'now' && !sitter.available) return false;
-    return true;
-  });
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-pink-600 mx-auto mb-4" />
-          <p className="text-gray-600">Chargement des baby-sitters...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-lg shadow-md">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={loadSitters}
-            className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700"
-          >
-            Réessayer
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Séparation
+  const pendingRequests = bookings.filter(b => b.statut === 'pending');
+  const upcomingBookings = bookings.filter(b => b.statut === 'confirmed');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        logoText="SmartBabyCare"
-        onSearchClick={handleSearch}
-        onBookingsClick={handleBookings}
-        onMessagesClick={handleMessages}
-        onAccountClick={handleAccount}
-        userAuthenticated={true}
-        userName="Mon compte"
-      />
+    <main className="min-h-screen bg-gray-50">
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-          Trouvez votre baby-sitter
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Mon Tableau de Bord Baby-Sitter</h2>
 
-        {/* Section Filtres */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Funnel className="w-5 h-5 text-pink-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Filtres</h3>
-          </div>
+        {/* Notifications de demandes */}
+        <div className="mb-8 relative">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            Nouvelles demandes
+            {pendingRequests.length > 0 && (
+              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{pendingRequests.length}</span>
+            )}
+          </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Ville
-              </label>
-              <input
-                type="text"
-                name="city"
-                value={filters.city}
-                onChange={handleFilterChange}
-                placeholder="Ex: Tunis"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
+          {!mySitterId && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl">
+              Connectez-vous avec un compte Baby-Sitter pour voir vos notifications.
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Prix max (DNT/h)
-              </label>
-              <input
-                type="number"
-                name="maxPrice"
-                value={filters.maxPrice}
-                onChange={handleFilterChange}
-                placeholder="Prix maximum"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
+          {mySitterId && loading && <p className="text-pink-500 animate-pulse">Recherche de notifications...</p>}
+          
+          {mySitterId && !loading && pendingRequests.length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 border border-gray-100">
+              Vous n'avez aucune nouvelle demande de garde en attente.
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Note minimum
-              </label>
-              <select
-                name="minRating"
-                value={filters.minRating}
-                onChange={handleFilterChange}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              >
-                <option value="">Toutes</option>
-                <option value="4.5">4.5+ ⭐</option>
-                <option value="4.7">4.7+ ⭐</option>
-                <option value="4.9">4.9+ ⭐</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Disponibilité
-              </label>
-              <select
-                name="availability"
-                value={filters.availability}
-                onChange={handleFilterChange}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              >
-                <option value="">Tous</option>
-                <option value="now">Disponible aujourd'hui</option>
-              </select>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {pendingRequests.map(booking => (
+              <div key={booking._id} className="bg-white border-l-4 border-l-pink-500 rounded-xl shadow-md p-5 flex flex-col justify-between hover:shadow-lg transition">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="bg-pink-100 text-pink-700 text-xs font-bold px-2 py-1 rounded-md uppercase">Notification</span>
+                    <span className="text-gray-600 font-bold">{booking.montantTotale} DNT</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 text-lg mb-1">Demande de garde parent</h4>
+                  <p className="text-gray-600 text-sm">📅 Date: {formatDate(booking.dateDebut)}</p>
+                  <p className="text-gray-600 text-sm">⏰ Horaires: {formatTime(booking.dateDebut)} à {formatTime(booking.dateFin)}</p>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button 
+                    onClick={() => handleUpdateStatus(booking._id, 'confirmed')}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+                  >
+                    Accepter
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateStatus(booking._id, 'cancelled')}
+                    className="flex-1 border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg transition text-sm"
+                  >
+                    Refuser
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Résultats */}
-        <div className="mb-4">
-          <p className="text-gray-600">
-            <span className="font-semibold text-pink-600">{filteredSitters.length}</span> baby-sitters trouvés
-          </p>
-        </div>
+        {/* Gardes confirmées a venir */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Mes gardes à venir ({upcomingBookings.length})</h3>
+          
+          {mySitterId && !loading && upcomingBookings.length === 0 && (
+            <p className="text-gray-500 text-center py-4">Aucune garde confirmée prochainement.</p>
+          )}
 
-        {/* Liste des baby-sitters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSitters.map((sitter) => (
-            <SitterCard
-              key={sitter.id}
-              sitter={{
-                ...sitter,
-                onViewProfile: () => handleViewProfile(sitter)
-              }}
-            />
-          ))}
-        </div>
-
-        {filteredSitters.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Aucun baby-sitter ne correspond à vos critères.</p>
+          <div className="space-y-4">
+            {upcomingBookings.map(booking => (
+              <div key={booking._id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                    ✅ Garde validée
+                  </h4>
+                  <div className="mt-1 text-sm text-gray-600">
+                    {formatDate(booking.dateDebut)} • {formatTime(booking.dateDebut)} - {formatTime(booking.dateFin)}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => navigate('/chat')}
+                  className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
+                >
+                  Message Parent
+                </button>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+
       </div>
-    </div>
+    </main>
   );
-};
+}
 
 export default SitterDashboard;

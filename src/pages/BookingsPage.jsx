@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BookingHeader from '../components/BookingHeader';
 import ProgressSteps from '../components/ProgressSteps';
 import DateTimeForm from '../components/DateTimeForm';
@@ -7,10 +8,28 @@ import PaymentStep from '../components/PaymentStep';
 import StepSummary from '../components/StepSummary';
 
 function BookingPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [sitterId, setSitterId] = useState(null);
+  const [parentId, setParentId] = useState(null);
+
+  useEffect(() => {
+    // Récupérer le SitterId
+    if (location.state?.sitterId) {
+      setSitterId(location.state.sitterId);
+    }
+
+    // Récupérer le ParentId
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setParentId(user.id || user._id);
+    }
+  }, [location]);
+
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
@@ -64,11 +83,13 @@ function BookingPage() {
     const baseDate = formData.date || new Date().toISOString().split('T')[0];
     const start = formData.startTime || '08:00';
     const end = formData.endTime || '12:00';
-    
+
     let dateDebutDate = new Date(`${baseDate}T${start}:00`);
     let dateFinDate = new Date(`${baseDate}T${end}:00`);
 
     const bookingPayload = {
+      parentId: parentId,
+      sitterId: sitterId,
       dateDebut: dateDebutDate.toISOString(),
       dateFin: dateFinDate.toISOString(),
       montantTotale: mockBookingData.totalPrice,
@@ -91,9 +112,10 @@ function BookingPage() {
       }
 
       console.log('Réservation confirmée via API:', data);
-      alert('Réservation confirmée avec succès !');
-      // Optionnel: rediriger vers une autre page ou vider le formulaire
-      
+      alert('Réservation confirmée avec succès ! Le baby-sitter recevra une notification.');
+      // Rediriger vers le tableau de bord parent
+      navigate('/parente');
+
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -104,7 +126,7 @@ function BookingPage() {
 
   // Render step content based on current step
   const renderStep = () => {
-    switch(currentStep) {
+    switch (currentStep) {
       case 1:
         return <DateTimeForm formData={formData} onInputChange={handleInputChange} />;
       case 2:
@@ -125,7 +147,7 @@ function BookingPage() {
       {/* Main content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ProgressSteps currentStep={currentStep} />
-        
+
         <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
           {error && (
             <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg">

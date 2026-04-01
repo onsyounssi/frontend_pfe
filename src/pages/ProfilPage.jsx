@@ -1,11 +1,12 @@
 // ProfilPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Star, Languages as LangIcon, Loader } from 'lucide-react';
 import sitterService from '../services/sitterService';
 
 function ProfilPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [sitter, setSitter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +21,7 @@ function ProfilPage() {
     try {
       setLoading(true);
       const data = await sitterService.getSitterById(id);
-      
+
       // Transformer les données
       const formattedSitter = {
         id: data._id,
@@ -37,7 +38,7 @@ function ProfilPage() {
         disponibilites: data.disponibilites || {},
         certifications: data.certification || 0
       };
-      
+
       setSitter(formattedSitter);
       setError(null);
     } catch (err) {
@@ -64,7 +65,7 @@ function ProfilPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-lg shadow-md">
           <p className="text-red-600 mb-4">{error || "Profil non trouvé"}</p>
-          <a href="/babysitter" className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700">
+          <a href="/baby-sitter" className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700">
             Retour à la liste
           </a>
         </div>
@@ -79,7 +80,7 @@ function ProfilPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
-          <a href="/babysitter">
+          <a href="/baby-sitter">
             <button className="p-2 hover:bg-gray-100 rounded-lg transition">
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
@@ -93,9 +94,9 @@ function ProfilPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="md:flex">
             <div className="md:w-1/3">
-              <img 
-                alt={sitter.nom} 
-                className="w-full h-64 md:h-full object-cover" 
+              <img
+                alt={sitter.nom}
+                className="w-full h-64 md:h-full object-cover"
                 src={sitter.image}
               />
             </div>
@@ -144,11 +145,9 @@ function ProfilPage() {
                   <p className="text-2xl font-bold text-pink-600">{sitter.price} DNT/h</p>
                   <p className="text-sm text-gray-500">Tarif horaire</p>
                 </div>
-                <a href={`/reservation/${sitter.id}`}>
-                  <button className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition font-semibold">
-                    Réserver
-                  </button>
-                </a>
+                <button onClick={() => navigate(`/reservation`, { state: { sitterId: sitter.id } })} className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition font-semibold">
+                  Réserver
+                </button>
               </div>
             </div>
           </div>
@@ -161,11 +160,10 @@ function ProfilPage() {
             {days.map((day, index) => (
               <div key={day} className="text-center">
                 <p className="text-sm font-semibold text-gray-700 mb-2">{day}</p>
-                <div className={`h-10 rounded-lg flex items-center justify-center ${
-                  sitter.disponibilites[dayKeys[index]] 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-400'
-                }`}>
+                <div className={`h-10 rounded-lg flex items-center justify-center ${sitter.disponibilites[dayKeys[index]]
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-400'
+                  }`}>
                   {sitter.disponibilites[dayKeys[index]] ? '✓' : '—'}
                 </div>
               </div>

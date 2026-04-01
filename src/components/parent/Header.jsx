@@ -5,7 +5,7 @@ const Header = () => {
       <h1 className="text-2xl font-bold text-pink-600">SmartBabyCare</h1>
       <nav className="hidden md:flex space-x-8">
         <a href="#" className="text-pink-600 font-semibold">Tableau de bord</a>
-        <a href="/babysitter" className="text-gray-600 hover:text-pink-600">Recherche</a>
+        <a href="/baby-sitter" className="text-gray-600 hover:text-pink-600">Recherche</a>
         <a href="/chat" className="text-gray-600 hover:text-pink-600">Messages</a>
 
       </nav>
