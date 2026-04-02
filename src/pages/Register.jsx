@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Ajout pour la navigation
+import { useNavigate } from 'react-router-dom';
 import { registerUser } from "../services/authService";
 
 function Register() {
-  const navigate = useNavigate(); // Pour la redirection
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     lastName: '',
@@ -18,178 +18,95 @@ function Register() {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [serverError, setServerError] = useState(''); // Pour les erreurs serveur
+  const [serverError, setServerError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    // Empêche de taper autre chose que des chiffres et le + pour le champ phone
+    // Restriction numérique pour le téléphone
     if (name === 'phone' && value !== '' && !/^[0-9+]*$/.test(value)) {
       return;
     }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error for this field when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-    // Clear server error when user modifies any field
-    if (serverError) {
-      setServerError('');
-    }
+    if (serverError) setServerError('');
   };
 
   const validateForm = () => {
     const newErrors = {};
+    const tunisianPhoneRegex = /^(?:\+216|00216)?[24579]\d{7}$/;
 
     if (!formData.lastName.trim()) newErrors.lastName = 'Le nom est requis';
     if (!formData.firstName.trim()) newErrors.firstName = 'Le prénom est requis';
 
-    // Validation du téléphone Tunisie
+    // Validation Téléphone
     const phoneValue = formData.phone.trim();
-    // RegEx pour : Optionnel (+216 ou 00216) suivi de exactement 8 chiffres
-    const tunisianPhoneRegex = /^(?:\+216|00216)?[24579]\d{7}$/;
-
     if (!phoneValue) {
       newErrors.phone = 'Le téléphone est requis';
-    } else if (phoneValue.replace(/^(?:\+216|00216)/, '').length !== 8) {
-      newErrors.phone = 'Le numéro doit contenir exactement 8 chiffres';
     } else if (!tunisianPhoneRegex.test(phoneValue)) {
-      newErrors.phone = 'Format de téléphone tunisien invalide (ex: 20123456)';
+      newErrors.phone = 'Format tunisien invalide (ex: 20123456)';
     }
 
-
-    /* if (!formData.phone.trim()) {
-     newErrors.phone = 'Le téléphone est requis';
-   } else if (formData.phone.length !== 8) { // Condition des 8 caractères
-     newErrors.phone = 'Le numéro doit contenir au moins 8 caractères';
-   } else if (!/^[0-9+,\-\s]+$/.test(formData.phone)) {
-     newErrors.phone = 'Format de téléphone invalide';
-   }
- */
+    // Validation Email
     if (!formData.email.trim()) {
-      newErrors.email = 'L\'email est requis';
+      newErrors.email = "L'email est requis";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Format d\'email invalide';
+      newErrors.email = "Format d'email invalide";
     }
 
-    if (!formData.role) {
-      newErrors.role = 'Veuillez sélectionner un rôle';
+    if (!formData.role) newErrors.role = 'Veuillez sélectionner un rôle';
+    if (!formData.password || formData.password.length < 6) {
+      newErrors.password = 'Minimum 6 caractères requis';
     }
-
-    if (!formData.password) {
-      newErrors.password = 'Le mot de passe est requis';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
-    }
-
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
     }
-
     if (!formData.acceptTerms) {
       newErrors.acceptTerms = 'Vous devez accepter les conditions';
     }
 
     return newErrors;
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Reset server error
     setServerError('');
-
-    // First validate the form
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
     }
 
     setIsLoading(true);
-
     try {
-      // Prepare data for API
-      const userData = {
-        lastName: formData.lastName,
-        firstName: formData.firstName,
-        phone: formData.phone,
-        email: formData.email,
-        role: formData.role,
-        password: formData.password,
-        acceptTerms: formData.acceptTerms
-      };
-
-      console.log('Sending registration data:', userData);
-
+      const { confirmPassword, ...userData } = formData;
       const response = await registerUser(userData);
 
-      console.log('Registration response:', response);
-
       if (response.success) {
-        // Success message
-
-
-        // Stocker les informations de l'utilisateur dans localStorage si nécessaire
         if (response.user) {
           localStorage.setItem('user', JSON.stringify(response.user));
-          localStorage.setItem('token', response.token); // Si vous avez un token
+          if (response.token) localStorage.setItem('token', response.token);
         }
-
-        // Rediriger vers la page de complétion de profil après 1 seconde
-        setTimeout(() => {
-          navigate('/complete-profile'); // Redirection modifiée pour l'onboarding
-        }, 1000);
-
-        // Reset form on success
-        setFormData({
-          lastName: '',
-          firstName: '',
-          phone: '',
-          email: '',
-          role: '',
-          password: '',
-          confirmPassword: '',
-          acceptTerms: false
-        });
+        setTimeout(() => navigate('/complete-profile'), 1000);
       } else {
-        setServerError(response.message || 'Erreur lors de l\'inscription');
+        setServerError(response.message || "Erreur d'inscription");
       }
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
-
-      // Detailed error handling
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-
-        // Handle specific error cases
-        if (error.response.status === 400) {
-          setServerError(error.response.data.message || 'Données invalides. Vérifiez vos informations.');
-        } else if (error.response.status === 409) {
-          setServerError('Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.');
-        } else if (error.response.status === 500) {
-          // Si le serveur envoie un message d'erreur spécifique (comme pour le téléphone)
-          const serverMsg = error.response.data?.error || error.response.data?.message;
-          setServerError(serverMsg || 'Erreur serveur. Veuillez réessayer plus tard.');
-        } else {
-          setServerError(error.response.data?.message || 'Une erreur est survenue lors de l\'inscription');
-        }
-      } else if (error.request) {
-        setServerError('Impossible de contacter le serveur. Vérifiez votre connexion internet.');
-      } else {
-        setServerError('Une erreur est survenue. Veuillez réessayer.');
-      }
+      setServerError(error.response?.data?.message || "Erreur de connexion au serveur");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+     <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-2">
@@ -249,8 +166,8 @@ function Register() {
               </div>
             </div>
 
-            {/* Right Panel - Form */}
-            <div className="p-10">
+
+           <div className="p-10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-semibold">Inscription</p>
@@ -264,208 +181,149 @@ function Register() {
                 </div>
               </div>
 
-              {/* Affichage des erreurs serveur */}
               {serverError && (
-                <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-                  <p className="font-semibold">Erreur:</p>
-                  <p>{serverError}</p>
+                <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+                  {serverError}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Ligne Nom & Prénom */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="block text-sm">
-                    <span className="font-semibold text-gray-800">Nom </span>
-                    <div className="mt-2 relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-4 h-4" aria-hidden="true">
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                      </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Nom</label>
+                    <div className="relative">
                       <input
                         name="lastName"
+                        type="text"
                         value={formData.lastName}
                         onChange={handleChange}
-                        placeholder="Votre nom"
-                        className={`w-full rounded-2xl border ${errors.lastName ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                        type="text"
+                        placeholder="Nom"
+                        className={`w-full rounded-2xl border ${errors.lastName ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
                       />
                     </div>
                     {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
-                  </label>
-                  <label className="block text-sm">
-                    <span className="font-semibold text-gray-800"> Prénom </span>
-                    <div className="mt-2 relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-4 h-4" aria-hidden="true">
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                      </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Prénom</label>
+                    <div className="relative">
                       <input
                         name="firstName"
+                        type="text"
                         value={formData.firstName}
                         onChange={handleChange}
-                        placeholder="Votre prénom"
-                        className={`w-full rounded-2xl border ${errors.firstName ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                        type="text"
+                        placeholder="Prénom"
+                        className={`w-full rounded-2xl border ${errors.firstName ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
                       />
                     </div>
                     {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
-                  </label>
-
-                  <label className="block text-sm mt-4">
-                    <span className="font-semibold text-gray-800">Téléphone</span>
-                    <div className="mt-2 relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone w-4 h-4" aria-hidden="true">
-                          <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
-
-                        </svg>
-                      </div>
-                      <input
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+216 00 000 000"
-                        className={`w-full rounded-2xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                        type="text"
-                      />
-                    </div>
-                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                  </label>
+                  </div>
                 </div>
 
-                <label className="block text-sm">
-                  <span className="font-semibold text-gray-800">Email</span>
-                  <div className="mt-2 relative">
+                {/* Téléphone - MODIFIÉ : Largeur complète identique à l'Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Téléphone</label>
+                  <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail w-4 h-4" aria-hidden="true">
-                        <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
-                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                      </svg>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth="2" strokeLinecap="round"/></svg>
+                    </div>
+                    <input
+                      name="phone"
+                      type="text"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="Ex: 20123456"
+                      className={`w-full rounded-2xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
+                    />
+                  </div>
+                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                </div>
+
+                {/* Email - Largeur complète */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Email</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth="2" strokeLinecap="round"/></svg>
                     </div>
                     <input
                       name="email"
+                      type="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="votre@email.com"
-                      className={`w-full rounded-2xl border ${errors.email ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                      type="email"
+                      placeholder="adresse@gmail.com"
+                      className={`w-full rounded-2xl border ${errors.email ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
                     />
                   </div>
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                </label>
-
-                <label className="block text-sm">
-                  <span className="font-semibold text-gray-800">Rôle</span>
-                  <div className="mt-2 relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check w-4 h-4" aria-hidden="true">
-                        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
-                        <path d="m9 12 2 2 4-4"></path>
-                      </svg>
-                    </div>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                      className={`w-full appearance-none rounded-2xl border ${errors.role ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                    >
-                      <option value="" disabled>Choisir…</option>
-                      <option value="parente">Parente</option>
-                      <option value="baby-sitter">Baby-sitter</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye w-4 h-4 rotate-90" aria-hidden="true">
-                        <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </div>
-                  </div>
-                  {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
-                </label>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="block text-sm">
-                    <span className="font-semibold text-gray-800">Mot de passe</span>
-                    <div className="mt-2 relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock w-4 h-4" aria-hidden="true">
-                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                      </div>
-                      <input
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="votre mot de passe"
-                        className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                        type="password"
-                      />
-                    </div>
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-                  </label>
-
-                  <label className="block text-sm">
-                    <span className="font-semibold text-gray-800">Confirmer</span>
-                    <div className="mt-2 relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock w-4 h-4" aria-hidden="true">
-                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                      </div>
-                      <input
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        placeholder="confirmez votre mot de passe"
-                        className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11`}
-                        type="password"
-                      />
-                    </div>
-                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-                  </label>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="inline-flex items-center space-x-2">
+                {/* Rôle */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Rôle</label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className={`w-full rounded-2xl border ${errors.role ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
+                  >
+                    <option value="">Choisir un rôle...</option>
+                    <option value="parente">Parente</option>
+                    <option value="baby-sitter">Baby-sitter</option>
+                  </select>
+                  {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+                </div>
+
+                {/* Mots de passe */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Mot de passe</label>
+                    <input
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="******"
+                      className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 outline-none transition`}
+                    />
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Confirmation</label>
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="******"
+                      className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 outline-none transition`}
+                    />
+                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       name="acceptTerms"
+                      type="checkbox"
                       checked={formData.acceptTerms}
                       onChange={handleChange}
-                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-offset-0"
-                      type="checkbox"
+                      className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
                     />
-                    <span className="text-sm text-gray-600">J’accepte les conditions</span>
+                    <span className="text-xs text-gray-600">J'accepte les conditions</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/login')} // Redirection vers login
-                    className="text-sm text-gray-700 hover:text-gray-900 font-semibold"
-                  >
-                    Déjà un compte ?
-                  </button>
+                  <button type="button" onClick={() => navigate('/login')} className="text-xs font-bold text-gray-900 hover:text-pink-600">Déjà un compte ?</button>
                 </div>
-                {errors.acceptTerms && <p className="text-red-500 text-xs -mt-3">{errors.acceptTerms}</p>}
+                {errors.acceptTerms && <p className="text-red-500 text-xs -mt-2">{errors.acceptTerms}</p>}
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-3.5 rounded-2xl font-semibold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
-                    }`}
+                  className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-wait' : 'bg-pink-600 hover:bg-pink-700 hover:scale-[1.01]'}`}
                 >
                   {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
                 </button>
-
-
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
-                  <p className="font-semibold text-gray-900 mb-2">Conseil</p>
-                  <p className="text-gray-600">Choisissez votre rôle et complétez vos informations pour un matching rapide.</p>
-                </div>
               </form>
             </div>
           </div>
@@ -473,6 +331,6 @@ function Register() {
       </div>
     </section>
   );
-};
+}
 
 export default Register;

@@ -10,7 +10,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     setMessage("");
     setError("");
     setLoading(true);
@@ -35,14 +35,14 @@ export default function ForgotPassword() {
 
       setMessage(response.data.message || "Email de réinitialisation envoyé avec succès!");
       setEmail("");
-      
+
     } catch (err) {
       console.error("Erreur:", err);
-      
+
       if (err.response) {
         // Le serveur a répondu avec une erreur
         const errorMessage = err.response.data?.message || err.response.data?.error || "Une erreur est survenue.";
-        
+
         if (err.response.status === 404) {
           setError("Aucun compte trouvé avec cet email.");
         } else if (err.response.status === 400) {
@@ -64,9 +64,9 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div style={{ 
-      maxWidth: "400px", 
-      margin: "50px auto", 
+    <div style={{
+      maxWidth: "400px",
+      margin: "50px auto",
       padding: "20px",
       border: "1px solid #ddd",
       borderRadius: "8px",
