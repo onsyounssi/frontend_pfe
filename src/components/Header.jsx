@@ -1,7 +1,7 @@
 // components/Header.jsx
 import { useState } from "react";
 
-const Header = ({ 
+const Header = ({
   logoText = "SmartBabyCare",
   onSearchClick,
   onBookingsClick,
@@ -16,38 +16,38 @@ const Header = ({
         <h1 className="text-2xl font-bold text-pink-600 cursor-pointer">
           {logoText}
         </h1>
-        
+
         <nav className="hidden md:flex space-x-8">
           <a href="/baby-sitter">
-          <button 
-            onClick={onSearchClick}
-            className="text-gray-600 hover:text-pink-600 transition"
-          >
-            Recherche
-          </button>
+            <button
+              onClick={onSearchClick}
+              className="text-gray-600 hover:text-pink-600 transition"
+            >
+              Recherche
+            </button>
           </a>
-          <button 
+          <button
             onClick={onBookingsClick}
             className="text-gray-600 hover:text-pink-600 transition"
           >
             Mes réservations
           </button>
-           <a href="/chat">
-          <button 
-            onClick={onMessagesClick}
-            className="text-gray-600 hover:text-pink-600 transition"
-          >
-            Messages
-          </button>
+          <a href="/chat">
+            <button
+              onClick={onMessagesClick}
+              className="text-gray-600 hover:text-pink-600 transition"
+            >
+              Messages
+            </button>
           </a>
         </nav>
         <a href="/reviews">
-        <button 
-          onClick={onAccountClick}
-          className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition"
-        >
-          {userAuthenticated ? userName : "Mon compte"}
-        </button>
+          <button
+            onClick={onAccountClick}
+            className="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition"
+          >
+            {userAuthenticated ? userName : "Mon compte"}
+          </button>
         </a>
       </div>
     </header>

@@ -8,7 +8,7 @@ function Header() {
         <h1 className="text-2xl font-bold text-pink-600">
           <Link to="/">SmartBabyCare</Link>
         </h1>
-        
+
         <nav className="hidden md:flex items-center space-x-8">
           <Link to="/" className="text-gray-600 hover:text-pink-600 font-medium transition">
             Comment ça marche
@@ -19,7 +19,7 @@ function Header() {
           <Link to="/login" className="text-gray-600 hover:text-pink-600 font-medium transition">
             Connexion
           </Link>
-          
+
           <Link to="/recherche-sitters">
             <button className="bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600 transition shadow-md">
               Réserver
@@ -29,7 +29,7 @@ function Header() {
 
         {/* Bouton Menu Mobile (optionnel) */}
         <div className="md:hidden">
-            <Link to="/login" className="text-pink-600 font-bold">Menu</Link>
+          <Link to="/login" className="text-pink-600 font-bold">Menu</Link>
         </div>
       </div>
     </header>

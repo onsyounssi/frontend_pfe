@@ -6,6 +6,7 @@ import DateTimeForm from '../components/DateTimeForm';
 import StepsDetails from '../components/StepsDetails';
 import PaymentStep from '../components/PaymentStep';
 import StepSummary from '../components/StepSummary';
+import { getToken } from '../services/authService';
 
 function BookingPage() {
   const location = useLocation();
@@ -88,19 +89,26 @@ function BookingPage() {
     let dateFinDate = new Date(`${baseDate}T${end}:00`);
 
     const bookingPayload = {
-      parentId: parentId,
-      sitterId: sitterId,
+      sitterProfileId: sitterId, // changement de sitterId vers sitterProfileId pour correspondre au backend
       dateDebut: dateDebutDate.toISOString(),
       dateFin: dateFinDate.toISOString(),
       montantTotale: mockBookingData.totalPrice,
+      message: formData.specialNeeds || "", // Ajout du champ message si disponible
       statut: 'pending'
     };
 
     try {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error('Accès non autorisé : token manquant');
+      }
+
       const response = await fetch('/api/Bookings/ajouter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(bookingPayload)
       });

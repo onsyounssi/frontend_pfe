@@ -1,37 +1,26 @@
 import axios from 'axios';
 
-const API_URL = '/api/Messages';
-
-// Normalement il faut récupérer les headers (Token) si l'API est protégée.
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  };
-};
+const API_URL = 'http://localhost:5000/api/Messages';
 
 export const messageService = {
-  // Récupérer la liste des messages d'un utilisateur
+  // Récupérer les messages
   getMessagesByUser: async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/${userId}`);
       return response.data;
     } catch (error) {
-      console.error('Erreur getMessagesByUser:', error);
+      console.error('Erreur API getMessages:', error);
       throw error;
     }
   },
 
-  // Envoyer un nouveau message
+  // Envoyer un message
   sendMessage: async (senderId, receiverId, text) => {
     try {
       const response = await axios.post(`${API_URL}/send`, { senderId, receiverId, text });
       return response.data;
     } catch (error) {
-      console.error('Erreur sendMessage:', error);
+      console.error('Erreur API sendMessage:', error);
       throw error;
     }
   }
