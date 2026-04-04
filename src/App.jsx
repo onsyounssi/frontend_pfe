@@ -12,6 +12,7 @@ import ReviewPage from './pages/ReviewPage';
 import MessagsPage from './pages/MessagsPage';
 import RegisterSitter from './pages/RegisterSitter';
 import CompleteProfile from './pages/CompleteProfile';
+import SuccessPage from './pages/SuccessPage';
 
 import ChatWidget from "./components/ChatWidget";
 import ResetPassword from "./pages/ResetPassword";
@@ -46,6 +47,7 @@ function App() {
         <Route path="/reviews" element={<ReviewPage />} />
         <Route path="/chat" element={<MessagsPage />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
+        <Route path="/success" element={<SuccessPage />} />
 
 
         <Route path="/" element={<Home />} />

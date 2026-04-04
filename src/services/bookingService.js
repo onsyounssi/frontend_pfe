@@ -92,6 +92,20 @@ const bookingService = {
   },
 
   // ─────────────────────────────────────────
+  // Paiement: créer une session Stripe
+  // ─────────────────────────────────────────
+  createCheckoutSession: async (booking) => {
+    try {
+      // NOTE: Our backend route is prefixed correctly
+      const response = await axios.post(`http://localhost:5000/api/create-checkout-session`, { booking }, getAuthHeaders());
+      return response.data; // { url: session.url }
+    } catch (error) {
+      console.error("Erreur createCheckoutSession:", error);
+      throw error;
+    }
+  },
+
+  // ─────────────────────────────────────────
   // Supprimer une réservation
   // ─────────────────────────────────────────
   deleteBooking: async (id) => {

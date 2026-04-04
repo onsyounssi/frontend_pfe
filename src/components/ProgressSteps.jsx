@@ -5,8 +5,7 @@ function ProgressSteps({ currentStep }) {
   const steps = [
     { number: 1, label: 'Date & Heure' },
     { number: 2, label: 'Détails' },
-    { number: 3, label: 'Paiement' },
-    { number: 4, label: 'Confirmation' }
+    { number: 3, label: 'Confirmation' }
   ];
 
   return (

@@ -9,6 +9,7 @@ function ParentDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [payingId, setPayingId] = useState(null); // Pour le bouton de paiement
 
   const IMAGE_BASE_URL = "http://localhost:5000/uploads/";
 
@@ -37,7 +38,7 @@ function ParentDashboard() {
   };
 
   // Séparation des réservations selon l'image
-  const upcomingBookings = bookings.filter(b => b.statut === 'pending' || b.statut === 'confirmed');
+  const upcomingBookings = bookings.filter(b => b.statut === 'pending' || b.statut === 'accepted' || b.statut === 'confirmed');
   const pastBookings = bookings.filter(b => b.statut === 'completed');
 
   // Formatage de la date : "15 fév 2024"
@@ -54,6 +55,23 @@ function ParentDashboard() {
       hour: '2-digit',
       minute: '2-digit',
     }).replace(':', ' : ');
+  };
+
+  const handlePay = async (booking) => {
+    try {
+      setPayingId(booking._id);
+      const data = await bookingService.createCheckoutSession(booking);
+      if (data?.url) {
+        window.location.href = data.url; // Redirection vers Stripe
+      } else {
+        alert("Erreur: Impossible de générer le lien de paiement.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l'appel à Stripe.");
+    } finally {
+      setPayingId(null);
+    }
   };
 
   if (error) {
@@ -106,7 +124,7 @@ function ParentDashboard() {
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-2">Baby-sitters favoris</p>
-              <p className="text-4xl font-bold text-gray-900">3</p> 
+              <p className="text-4xl font-bold text-gray-900">3</p>
             </div>
             <div className="text-pink-500">
               <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
@@ -119,7 +137,7 @@ function ParentDashboard() {
         {/* --- Section Prochaines Gardes --- */}
         <section className="bg-[#FBFBFB] rounded-2xl p-8 border border-gray-50">
           <h2 className="text-xl font-bold text-gray-800 mb-6">Prochaines gardes</h2>
-          
+
           <div className="space-y-4">
             {loading ? (
               <div className="text-center py-10 text-gray-400">Chargement...</div>
@@ -129,13 +147,16 @@ function ParentDashboard() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-gray-900">{booking.sitterProfileId?.nom || "Inès R."}</span>
-                      <span className={`px-3 py-0.5 rounded-full text-xs font-medium ${
-                        booking.statut === 'confirmed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
-                      }`}>
-                        {booking.statut === 'confirmed' ? 'Confirmée' : 'En attente'}
+                      <span className={`px-3 py-0.5 rounded-full text-xs font-medium ${booking.statut === 'confirmed' ? 'bg-green-100 text-green-600' :
+                          booking.statut === 'accepted' ? 'bg-blue-100 text-blue-600' :
+                            'bg-yellow-100 text-yellow-600'
+                        }`}>
+                        {booking.statut === 'confirmed' ? 'Payée' :
+                          booking.statut === 'accepted' ? 'Prêt pour paiement' :
+                            'En attente de confirmation'}
                       </span>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1.5">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -149,17 +170,26 @@ function ParentDashboard() {
 
                     {/* Affichage des enfants (dynamique) */}
                     <div className="text-sm text-gray-400">
-                      {booking.enfants && booking.enfants.length > 0 
+                      {booking.enfants && booking.enfants.length > 0
                         ? booking.enfants.map(e => `${e.prenom} (${e.age} ans)`).join(', ')
                         : "Lucas (3 ans)" /* Valeur par défaut si non renseigné */}
                     </div>
                   </div>
 
                   <div className="flex gap-2 mt-4 md:mt-0">
+                    {booking.statut === 'accepted' && (
+                      <button
+                        onClick={() => handlePay(booking)}
+                        disabled={payingId === booking._id}
+                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition active:scale-95 disabled:opacity-50"
+                      >
+                        {payingId === booking._id ? '⏳ Redirection...' : '💳 Payer'}
+                      </button>
+                    )}
                     <button className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
                       Détails
                     </button>
-                    <button 
+                    <button
                       onClick={() => navigate('/chat', { state: { sitterId: booking.sitterId } })}
                       className="px-4 py-2 bg-[#E91E63] text-white rounded-lg text-sm font-semibold hover:bg-[#D81B60] transition"
                     >

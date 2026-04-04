@@ -58,7 +58,7 @@ function SitterDashboard() {
   };
 
   const pendingBookings = bookings.filter(b => b.statut === 'pending');
-  const confirmedBookings = bookings.filter(b => b.statut === 'confirmed');
+  const confirmedBookings = bookings.filter(b => b.statut === 'confirmed' || b.statut === 'accepted');
   const pastBookings = bookings.filter(b => b.statut === 'completed' || b.statut === 'cancelled');
 
   const formatDate = (d) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -67,7 +67,7 @@ function SitterDashboard() {
   const handleAccept = async (bookingId) => {
     setProcessingId(bookingId);
     try {
-      await bookingService.updateStatus(bookingId, 'confirmed');
+      await bookingService.updateStatus(bookingId, 'accepted');
       await fetchBookings();
     } catch (err) {
       alert('Erreur lors de la confirmation');

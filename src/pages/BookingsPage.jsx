@@ -7,6 +7,7 @@ import StepsDetails from '../components/StepsDetails';
 import PaymentStep from '../components/PaymentStep';
 import StepSummary from '../components/StepSummary';
 import { getToken } from '../services/authService';
+import bookingService from '../services/bookingService';
 
 function BookingPage() {
   const location = useLocation();
@@ -53,6 +54,8 @@ function BookingPage() {
     totalPrice: 45 // Montant fixe pour l'exemple
   };
 
+  // handleCheckout supprimé car intégré dans handleSubmit
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -62,7 +65,7 @@ function BookingPage() {
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -89,44 +92,25 @@ function BookingPage() {
     let dateFinDate = new Date(`${baseDate}T${end}:00`);
 
     const bookingPayload = {
-      sitterProfileId: sitterId, // changement de sitterId vers sitterProfileId pour correspondre au backend
+      sitterProfileId: sitterId,
       dateDebut: dateDebutDate.toISOString(),
       dateFin: dateFinDate.toISOString(),
       montantTotale: mockBookingData.totalPrice,
-      message: formData.specialNeeds || "", // Ajout du champ message si disponible
+      message: formData.specialNeeds || "",
       statut: 'pending'
     };
 
     try {
-      const token = getToken();
+      const data = await bookingService.createBooking(bookingPayload);
 
-      if (!token) {
-        throw new Error('Accès non autorisé : token manquant');
+      if (data.success && data.booking) {
+        console.log('Réservation créée:', data.booking);
+        alert('Votre demande de réservation a été envoyée ! Elle est en attente de confirmation par le baby-sitter.');
+        navigate('/parente');
       }
-
-      const response = await fetch('/api/Bookings/ajouter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(bookingPayload)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la réservation');
-      }
-
-      console.log('Réservation confirmée via API:', data);
-      alert('Réservation confirmée avec succès ! Le baby-sitter recevra une notification.');
-      // Rediriger vers le tableau de bord parent
-      navigate('/parente');
-
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      setError(err.message || 'Une erreur est survenue lors de la réservation.');
     } finally {
       setLoading(false);
     }
@@ -140,8 +124,6 @@ function BookingPage() {
       case 2:
         return <StepsDetails formData={formData} onInputChange={handleInputChange} />;
       case 3:
-        return <PaymentStep formData={formData} onInputChange={handleInputChange} />;
-      case 4:
         return <StepSummary bookingData={mockBookingData} />;
       default:
         return <DateTimeForm formData={formData} onInputChange={handleInputChange} />;
@@ -178,7 +160,7 @@ function BookingPage() {
             )}
             <div className="flex-1"></div>
             <button
-              onClick={currentStep === 4 ? handleSubmit : handleNext}
+              onClick={currentStep === 3 ? handleSubmit : handleNext}
               className={`px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition font-semibold flex items-center justify-center ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
               disabled={loading}
             >
@@ -190,7 +172,8 @@ function BookingPage() {
                   </svg>
                   Traitement...
                 </span>
-              ) : currentStep === 4 ? 'Confirmer la réservation' : 'Suivant'}
+
+              ) : currentStep === 3 ? 'Confirmer la réservation' : 'Suivant'}
             </button>
           </div>
         </div>
