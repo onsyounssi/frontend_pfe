@@ -29,7 +29,7 @@ function AdminDashboard() {
         .filter(u => u.role === 'parente' || u.role === 'parent')
         .map(u => ({
           id: u._id,
-          nom: `${u.firstName} ${u.lastName}`,
+          nom: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
           ville: u.ville || 'Non spécifié',
           statut: u.statut || 'Actif',
           email: u.email
@@ -39,7 +39,7 @@ function AdminDashboard() {
         .filter(u => u.role === 'baby-sitter')
         .map(u => ({
           id: u._id,
-          nom: `${u.firstName} ${u.lastName}`,
+          nom: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
           specialite: u.specialite || 'Général',
           note: u.note || 4.5, // Note par défaut temporaire
           email: u.email

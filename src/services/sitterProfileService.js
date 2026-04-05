@@ -58,6 +58,17 @@ const sitterProfileService = {
       throw error;
     }
   },
+
+  // Récupérer un profil par USER ID (pour messagerie / contact)
+  getSitterByUserId: async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Erreur getSitterByUserId:", error);
+      throw error;
+    }
+  },
 };
 
 export default sitterProfileService;

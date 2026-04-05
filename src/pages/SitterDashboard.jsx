@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import bookingService from '../services/bookingService';
 import sitterProfileService from '../services/sitterProfileService';
 
+import Header from '../components/layout/Header';
+
 function SitterDashboard() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
@@ -67,8 +69,25 @@ function SitterDashboard() {
   const handleAccept = async (bookingId) => {
     setProcessingId(bookingId);
     try {
+      // Trouver la réservation correspondante pour récupérer les infos du parent
+      const booking = pendingBookings.find(b => b._id === bookingId);
+
       await bookingService.updateStatus(bookingId, 'accepted');
+
+      // On rafraîchit les données localement
       await fetchBookings();
+
+      // Redirection automatique immédiate vers la messagerie pour contacter le parent
+      if (booking) {
+        navigate('/chat', {
+          state: {
+            contactId: booking.parentId?._id || booking.parentId,
+            contactName: booking.parentId?.firstName ? `${booking.parentId.firstName} ${booking.parentId.lastName}` : 'Parent',
+            contactImage: booking.parentId?.image,
+            contactRole: 'parent'
+          }
+        });
+      }
     } catch (err) {
       alert('Erreur lors de la confirmation');
     } finally {
@@ -100,46 +119,7 @@ function SitterDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* ── Header ── */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 text-white flex items-center justify-center text-lg shadow-md">
-              🌟
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">SmartBabyCare</h1>
-              <p className="text-xs text-gray-400">Tableau de bord baby-sitter</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Badge notification */}
-            {pendingBookings.length > 0 && (
-              <div className="relative">
-                <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center text-sm font-bold">
-                  🔔
-                </div>
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                  {pendingBookings.length}
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm overflow-hidden">
-                {profile?.image
-                  ? <img src={`http://localhost:5000/uploads/${profile.image}`} alt="" className="w-full h-full object-cover" />
-                  : (user?.firstName?.[0]?.toUpperCase() || 'S')
-                }
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-gray-900">{profile?.nom || user?.firstName}</p>
-                <p className="text-xs text-gray-400">Baby-sitter</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -173,7 +153,7 @@ function SitterDashboard() {
                 }
               </div>
               <div>
-                <h2 className="text-xl font-bold">{profile.nom}</h2>
+                <h2 className="text-xl font-bold">{profile.prenom || ''} {profile.nom}</h2>
                 <p className="text-indigo-100 text-sm">{profile.localisation} • {profile.tarifHoraire} DNT/h</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-yellow-300">★</span>
@@ -181,9 +161,20 @@ function SitterDashboard() {
                   <span className="text-indigo-200 text-xs">({profile.nbAvis} avis)</span>
                 </div>
               </div>
-              <div className="ml-auto text-right hidden sm:block">
-                <p className="text-indigo-100 text-sm">Gardes confirmées</p>
-                <p className="text-3xl font-bold">{confirmedBookings.length}</p>
+              <div className="ml-auto flex items-center gap-4">
+                <button
+                  onClick={() => navigate('/chat')}
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-5 py-2.5 rounded-xl text-sm font-bold transition border border-white/30 shadow-sm flex items-center gap-2 group"
+                >
+                  <svg className="w-5 h-5 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  Messagerie
+                </button>
+                <div className="text-right hidden sm:block border-l pl-4 border-white/20">
+                  <p className="text-indigo-100 text-sm">Gardes confirmées</p>
+                  <p className="text-3xl font-bold">{confirmedBookings.length}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -340,7 +331,15 @@ function SitterDashboard() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleContact(booking)}
+                      onClick={() => navigate('/chat', {
+                        state: {
+                          contactId: booking.parentId._id,
+                          contactName: `${booking.parentId.firstName} ${booking.parentId.lastName}`,
+                          contactImage: booking.parentId.image,
+                          contactCity: booking.parentId.city,
+                          contactRole: 'parent'
+                        }
+                      })}
                       className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
                     >
                       💬 Contacter le parent

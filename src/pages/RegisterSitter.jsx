@@ -12,6 +12,7 @@ const RegisterSitter = () => {
   const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
+    prenom: '',
     nom: '',
     tarifHoraire: '',
     experience: '',
@@ -65,11 +66,13 @@ const RegisterSitter = () => {
     setSubmitting(true);
 
     // Vérifications
+    if (!formData.prenom.trim()) { setError('Le prénom est requis'); setSubmitting(false); return; }
     if (!formData.nom.trim()) { setError('Le nom est requis'); setSubmitting(false); return; }
     if (!formData.tarifHoraire) { setError('Le tarif horaire est requis'); setSubmitting(false); return; }
 
     try {
       const data = new FormData();
+      data.append('prenom', formData.prenom);
       data.append('nom', formData.nom);
       data.append('tarifHoraire', formData.tarifHoraire);
       data.append('experience', formData.experience);
@@ -172,10 +175,18 @@ const RegisterSitter = () => {
             {/* Infos principales */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nom complet *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Prénom *</label>
+                <input
+                  name="prenom" value={formData.prenom} onChange={handleChange}
+                  placeholder="Votre prénom" required
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Nom *</label>
                 <input
                   name="nom" value={formData.nom} onChange={handleChange}
-                  placeholder="Prénom Nom" required
+                  placeholder="Votre nom" required
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -253,8 +264,8 @@ const RegisterSitter = () => {
                     key={key} type="button"
                     onClick={() => handleCheck(key)}
                     className={`py-3 rounded-xl text-sm font-semibold border-2 transition flex flex-col items-center gap-1 ${formData.disponibilites[key]
-                        ? 'bg-indigo-500 text-white border-indigo-500'
-                        : 'bg-white text-gray-400 border-gray-200 hover:border-indigo-300'
+                      ? 'bg-indigo-500 text-white border-indigo-500'
+                      : 'bg-white text-gray-400 border-gray-200 hover:border-indigo-300'
                       }`}
                   >
                     {label}

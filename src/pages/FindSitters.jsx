@@ -1,6 +1,6 @@
 // pages/FindSitters.jsx
 import { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import Header from '../components/layout/Header';
 import SitterCard from '../components/SitterCard';
 import { Funnel, Loader } from 'lucide-react';
 import sitterService from '../services/sitterService';
@@ -28,7 +28,7 @@ const FindSitters = () => {
       // Transformer les données du backend pour correspondre au format attendu par SitterCard
       const formattedSitters = data.map(sitter => ({
         id: sitter._id,
-        name: sitter.nom,
+        name: `${sitter.prenom || ''} ${sitter.nom}`,
         city: sitter.localisation || 'Non spécifié',
         price: sitter.tarifHoraire,
         rating: sitter.noteMoyenne || 0,
@@ -59,23 +59,7 @@ const FindSitters = () => {
     return disponibilites[today] || false;
   };
 
-  // Gestionnaires de navigation
-  const handleSearch = () => {
-    console.log('Navigation vers recherche');
-  };
-
-  const handleBookings = () => {
-    console.log('Navigation vers réservations');
-  };
-
-  const handleMessages = () => {
-    console.log('Navigation vers messages');
-  };
-
-  const handleAccount = () => {
-    console.log('Navigation vers compte');
-  };
-
+  // Gestionnaires de navigation (plus nécessaires avec le nouveau Header dynamique)
   const handleViewProfile = (sitter) => {
     window.location.href = `/profil/${sitter.id}`;
   };
@@ -126,15 +110,7 @@ const FindSitters = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
-        logoText="SmartBabyCare"
-        onSearchClick={handleSearch}
-        onBookingsClick={handleBookings}
-        onMessagesClick={handleMessages}
-        onAccountClick={handleAccount}
-        userAuthenticated={true}
-        userName="Recherche"
-      />
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '../services/bookingService';
-import Header from '../components/parent/Header';
+import Header from '../components/layout/Header';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ function ParentDashboard() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      <Header user={user} />
+      <Header />
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Mon tableau de bord</h1>
@@ -146,10 +146,12 @@ function ParentDashboard() {
                 <div key={booking._id} className="bg-white p-5 rounded-xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between shadow-sm">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-gray-900">{booking.sitterProfileId?.nom || "Inès R."}</span>
+                      <span className="font-bold text-gray-900">
+                        {booking.sitterProfileId ? `${booking.sitterProfileId.prenom || ''} ${booking.sitterProfileId.nom}` : "Inès R."}
+                      </span>
                       <span className={`px-3 py-0.5 rounded-full text-xs font-medium ${booking.statut === 'confirmed' ? 'bg-green-100 text-green-600' :
-                          booking.statut === 'accepted' ? 'bg-blue-100 text-blue-600' :
-                            'bg-yellow-100 text-yellow-600'
+                        booking.statut === 'accepted' ? 'bg-blue-100 text-blue-600' :
+                          'bg-yellow-100 text-yellow-600'
                         }`}>
                         {booking.statut === 'confirmed' ? 'Payée' :
                           booking.statut === 'accepted' ? 'Prêt pour paiement' :

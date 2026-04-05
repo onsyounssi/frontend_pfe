@@ -5,6 +5,8 @@ import { ArrowLeft, MapPin, Star, Loader, X, Calendar, Clock } from 'lucide-reac
 import sitterProfileService from '../services/sitterProfileService';
 import bookingService from '../services/bookingService';
 
+import Header from '../components/layout/Header';
+
 function ProfilPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ function ProfilPage() {
       const data = await sitterProfileService.getSitterById(id);
       setSitter({
         _id: data._id,
-        name: data.nom,
+        name: `${data.prenom || ''} ${data.nom}`,
         city: data.localisation || 'Non spécifié',
         price: data.tarifHoraire,
         rating: data.noteMoyenne || 0,
@@ -89,8 +91,13 @@ function ProfilPage() {
         setTimeout(() => {
           setShowModal(false);
           setBookingSuccess('');
-          navigate('/parente');
-        }, 2500);
+          navigate('/chat', {
+            state: {
+              contactId: id, // 'id' est l'ID du profile baby-sitter
+              contactName: sitter.name
+            }
+          });
+        }, 2000);
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Erreur lors de la réservation. Réessayez.';
@@ -125,15 +132,7 @@ function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => navigate('/recherche-sitters')} className="p-2 hover:bg-gray-100 rounded-xl transition">
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-          <h1 className="text-xl font-bold text-pink-600">SmartBabyCare</h1>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
 
@@ -186,35 +185,50 @@ function ProfilPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div>
+              <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                <div className="flex-1">
                   <p className="text-3xl font-bold text-pink-600">{sitter.price} DNT<span className="text-sm font-normal text-gray-400">/h</span></p>
                   <p className="text-xs text-gray-400">Tarif horaire</p>
                 </div>
-                {user?.role === 'parente' && (
-                  <button
-                    onClick={() => navigate('/reservation', { state: { sitterId: sitter._id, sitterName: sitter.name, sitterPrice: sitter.price } })}
-                    className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-semibold text-sm transition shadow-lg hover:shadow-xl active:scale-[0.98]"
-                  >
-                    📅 Réserver ce sitter
-                  </button>
-                )}
-                {user?.role === 'baby-sitter' && (
-                  <button
-                    onClick={() => navigate('/reservation', { state: { sitterId: sitter._id, sitterName: sitter.name, sitterPrice: sitter.price } })}
-                    className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-semibold text-sm transition shadow-lg hover:shadow-xl active:scale-[0.98]"
-                  >
-                    📅 Réserver ce sitter
-                  </button>
-                )}
-                {!user && (
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold text-sm"
-                  >
-                    Se connecter pour réserver
-                  </button>
-                )}
+
+                <div className="flex gap-3">
+                  {user?.role === 'parente' && (
+                    <>
+                      <button
+                        onClick={() => navigate('/chat', {
+                          state: {
+                            contactId: sitter._id,
+                            contactName: sitter.name,
+                            contactImage: sitter.image?.split('/').pop(), // Envoyer juste le nom du fichier
+                            contactRole: 'sitter'
+                          }
+                        })}
+                        className="bg-white border-2 border-pink-500 text-pink-500 hover:bg-pink-50 px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2"
+                      >
+                        💬 Contacter
+                      </button>
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center gap-2"
+                      >
+                        📅 Réserver
+                      </button>
+                    </>
+                  )}
+
+                  {user?.role === 'baby-sitter' && (
+                    <p className="text-sm italic text-gray-400">Mode aperçu (Profil Sitter)</p>
+                  )}
+
+                  {!user && (
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold text-sm"
+                    >
+                      Se connecter pour réserver
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
