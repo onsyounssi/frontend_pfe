@@ -24,9 +24,19 @@ function Login() {
     setIsLoading(true);
     setError("");
 
-    //Validation de base : on vérifie que l'utilisateur a saisi ses infos
-    if (!email || !password) {
-      setError("Veuillez remplir tous les champs");
+    // Validation de base : on vérifie que l'utilisateur a saisi ses infos
+    if (!email && !password) {
+      setError("L'email est requis et le mot de passe est requis.");
+      setIsLoading(false);
+      return;
+    }
+    if (!email) {
+      setError("L'email est requis.");
+      setIsLoading(false);
+      return;
+    }
+    if (!password) {
+      setError("Le mot de passe est requis.");
       setIsLoading(false);
       return;
     }
@@ -179,7 +189,7 @@ function Login() {
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
                   <div className="mt-2 relative">
                     <label className="block text-sm">
                       <span className="font-semibold text-gray-800">Email</span>
@@ -194,10 +204,9 @@ function Login() {
                           name="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="votre@email.com"
+                          placeholder="adresse@gmail.com"
                           className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11"
                           type="email"
-                          required
                         />
                       </div>
                     </label>
@@ -216,10 +225,9 @@ function Login() {
                         name="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Votre mot de passe"
+                        placeholder="******"
                         className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11"
                         type="password"
-                        required
                       />
                     </div>
                   </label>

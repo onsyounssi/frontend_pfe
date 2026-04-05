@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '../services/bookingService';
+import reviewService from '../services/reviewService';
 import Header from '../components/layout/Header';
 
 function ParentDashboard() {
@@ -10,8 +11,7 @@ function ParentDashboard() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [payingId, setPayingId] = useState(null); // Pour le bouton de paiement
-
-  const IMAGE_BASE_URL = "http://localhost:5000/uploads/";
+  const [reviewHistory, setReviewHistory] = useState([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -24,11 +24,35 @@ function ParentDashboard() {
     fetchBookings();
   }, [navigate]);
 
+  const loadReviewHistory = useCallback(async () => {
+    const saved = localStorage.getItem('user');
+    if (!saved) return;
+    try {
+      const u = JSON.parse(saved);
+      const pid = u._id || u.id;
+      if (!pid) return;
+      const raw = await reviewService.getParentReviewHistory(pid);
+      setReviewHistory(
+        raw.map((r) => ({
+          id: r._id,
+          sitterName: r.sitterName || 'Baby-sitter',
+          date: new Date(r.createdAt || r.date).toLocaleDateString('fr-FR'),
+          rating: r.note,
+          text: r.commentaire,
+          sitterProfileId: r.sitterProfileId,
+        }))
+      );
+    } catch {
+      setReviewHistory([]);
+    }
+  }, []);
+
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const data = await bookingService.getMyBookingsAsParent();
       setBookings(Array.isArray(data) ? data : []);
+      await loadReviewHistory();
     } catch (err) {
       console.error(err);
       setError('Impossible de charger vos réservations.');
@@ -120,11 +144,11 @@ function ParentDashboard() {
             </div>
           </div>
 
-          {/* Favoris */}
+          {/* Avis publiés */}
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-500 mb-2">Baby-sitters favoris</p>
-              <p className="text-4xl font-bold text-gray-900">3</p>
+              <p className="text-sm text-gray-500 mb-2">Avis publiés</p>
+              <p className="text-4xl font-bold text-gray-900">{loading ? '...' : reviewHistory.length}</p>
             </div>
             <div className="text-pink-500">
               <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
@@ -132,6 +156,16 @@ function ParentDashboard() {
               </svg>
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          <button
+            type="button"
+            onClick={() => navigate('/reviews')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E91E63] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-[#D81B60] transition"
+          >
+            ⭐ Rédiger un avis
+          </button>
         </div>
 
         {/* --- Section Prochaines Gardes --- */}
@@ -188,7 +222,10 @@ function ParentDashboard() {
                         {payingId === booking._id ? '⏳ Redirection...' : '💳 Payer'}
                       </button>
                     )}
-                    <button className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+                    <button 
+                      onClick={() => booking.sitterProfileId?._id && navigate(`/profil/${booking.sitterProfileId._id}`)}
+                      className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
+                    >
                       Détails
                     </button>
                     <button
@@ -204,6 +241,103 @@ function ParentDashboard() {
               <div className="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">
                 Aucune garde prévue.
               </div>
+            )}
+          </div>
+        </section>
+
+        {/* --- Historique des avis (dynamique) --- */}
+        <section className="mt-10 bg-[#FBFBFB] rounded-2xl p-8 border border-gray-50">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Historique de mes avis</h2>
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">Chargement...</div>
+          ) : reviewHistory.length === 0 ? (
+            <p className="text-gray-500 text-center py-8 border-2 border-dashed border-gray-100 rounded-xl">
+              Vous n&apos;avez pas encore publié d&apos;avis. Utilisez « Rédiger un avis » après une garde.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {reviewHistory.map((r) => (
+                <li
+                  key={r.id}
+                  className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm"
+                >
+                  <div>
+                    <p className="font-bold text-gray-900">
+                      {r.sitterName}
+                      <span className="text-gray-400 font-normal text-sm ml-2">{r.date}</span>
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">&ldquo;{r.text}&rdquo;</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-yellow-500 font-bold">{r.rating}/5</span>
+                    {r.sitterProfileId && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/profil/${r.sitterProfileId}`)}
+                        className="text-sm text-[#E91E63] font-semibold hover:underline"
+                      >
+                        Voir le profil
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* --- Gardes passées + lien avis --- */}
+        <section className="mt-10 bg-[#FBFBFB] rounded-2xl p-8 border border-gray-50">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Gardes terminées</h2>
+          <div className="space-y-4">
+            {loading ? (
+              <div className="text-center py-8 text-gray-400">Chargement...</div>
+            ) : pastBookings.length === 0 ? (
+              <p className="text-gray-500 text-center py-8 border-2 border-dashed border-gray-100 rounded-xl">
+                Aucune garde terminée pour le moment.
+              </p>
+            ) : (
+              pastBookings.map((booking) => {
+                const sp = booking.sitterProfileId;
+                const name = sp ? `${sp.prenom || ''} ${sp.nom || ''}`.trim() || 'Baby-sitter' : 'Baby-sitter';
+                return (
+                  <div
+                    key={booking._id}
+                    className="bg-white p-5 rounded-xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4"
+                  >
+                    <div>
+                      <p className="font-bold text-gray-900">{name}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatDate(booking.dateDebut)} · {formatTime(booking.dateDebut)} – {formatTime(booking.dateFin)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {sp?._id && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/profil/${sp._id}`)}
+                            className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
+                          >
+                            Profil
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate('/reviews', {
+                                state: { sitterProfileId: sp._id, sitterName: name },
+                              })
+                            }
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-bold transition"
+                          >
+                            Laisser un avis
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         </section>

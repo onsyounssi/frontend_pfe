@@ -1,16 +1,19 @@
 // pages/ProfilPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, MapPin, Star, Loader, X, Calendar, Clock } from 'lucide-react';
 import sitterProfileService from '../services/sitterProfileService';
 import bookingService from '../services/bookingService';
+import reviewService from '../services/reviewService';
 
 import Header from '../components/layout/Header';
 
 function ProfilPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sitter, setSitter] = useState(null);
+  const [profileReviews, setProfileReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
@@ -27,6 +30,30 @@ function ProfilPage() {
     if (savedUser) setUser(JSON.parse(savedUser));
     if (id) loadSitterProfile();
   }, [id]);
+
+  useEffect(() => {
+    if (!location.state?.openBookingModal) return;
+    const saved = localStorage.getItem('user');
+    if (!saved) return;
+    try {
+      const u = JSON.parse(saved);
+      if (u.role !== 'parente') return;
+      setShowModal(true);
+      setBookingError('');
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+      /* ignore */
+    }
+  }, [location.state, location.pathname, navigate]);
+
+  const loadProfileReviews = async (sitterId) => {
+    try {
+      const list = await reviewService.getReviewsForSitter(sitterId);
+      setProfileReviews(Array.isArray(list) ? list : []);
+    } catch {
+      setProfileReviews([]);
+    }
+  };
 
   const loadSitterProfile = async () => {
     try {
@@ -47,6 +74,7 @@ function ProfilPage() {
         disponibilites: data.disponibilites || {},
         certifications: data.certification || 0,
       });
+      await loadProfileReviews(data._id);
       setError(null);
     } catch (err) {
       setError('Impossible de charger le profil du baby-sitter');
@@ -60,7 +88,7 @@ function ProfilPage() {
     setBookingError('');
 
     if (!user) {
-      navigate('/login');
+      navigate('/login', { state: { from: `/profil/${id}` } });
       return;
     }
     if (user.role !== 'parente') {
@@ -85,20 +113,28 @@ function ProfilPage() {
         message: booking.message,
       });
 
-      if (response.success || response.booking) {
-        setBookingSuccess('🎉 Réservation envoyée avec succès ! Le baby-sitter vous répondra prochainement.');
-        setBooking({ dateDebut: '', dateFin: '', message: '' });
-        setTimeout(() => {
-          setShowModal(false);
-          setBookingSuccess('');
-          navigate('/chat', {
-            state: {
-              contactId: id, // 'id' est l'ID du profile baby-sitter
-              contactName: sitter.name
-            }
-          });
-        }, 2000);
+      const failed =
+        response &&
+        typeof response === 'object' &&
+        (response.success === false || response.error === true);
+      if (failed) {
+        setBookingError(response.message || 'La réservation a été refusée.');
+        return;
       }
+
+      setBookingSuccess('🎉 Réservation envoyée avec succès ! Le baby-sitter vous répondra prochainement.');
+      setBooking({ dateDebut: '', dateFin: '', message: '' });
+      setTimeout(() => {
+        setShowModal(false);
+        setBookingSuccess('');
+        navigate('/chat', {
+          state: {
+            contactId: id,
+            contactName: sitter.name,
+            contactRole: 'sitter',
+          },
+        });
+      }, 2000);
     } catch (err) {
       const msg = err.response?.data?.message || 'Erreur lors de la réservation. Réessayez.';
       setBookingError(msg);
@@ -130,11 +166,39 @@ function ProfilPage() {
     </div>
   );
 
+  const reviewCount = profileReviews.length > 0 ? profileReviews.length : sitter.reviews;
+  const reviewAvg =
+    profileReviews.length > 0
+      ? profileReviews.reduce((acc, r) => acc + (Number(r.note) || 0), 0) / profileReviews.length
+      : sitter.rating;
+
+  const openReservationModal = () => {
+    if (!user) {
+      navigate('/login', { state: { from: `/profil/${id}` } });
+      return;
+    }
+    if (user.role !== 'parente') {
+      alert('Seuls les comptes parents peuvent réserver une garde.');
+      return;
+    }
+    setBookingError('');
+    setBookingSuccess('');
+    setShowModal(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-8 pb-28 md:pb-24 space-y-6">
+        <button
+          type="button"
+          onClick={() => navigate('/recherche-sitters')}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-pink-600 transition mb-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour à la recherche
+        </button>
 
         {/* Carte principale */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -159,9 +223,11 @@ function ProfilPage() {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                    <span className="text-xl font-bold text-gray-900">{sitter.rating || 'N/A'}</span>
+                    <span className="text-xl font-bold text-gray-900">
+                      {reviewAvg ? reviewAvg.toFixed(1) : sitter.rating || 'N/A'}
+                    </span>
                   </div>
-                  <span className="text-gray-400 text-sm">{sitter.reviews} avis</span>
+                  <span className="text-gray-400 text-sm">{reviewCount} avis</span>
                 </div>
               </div>
 
@@ -191,27 +257,33 @@ function ProfilPage() {
                   <p className="text-xs text-gray-400">Tarif horaire</p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {user?.role === 'parente' && (
                     <>
                       <button
-                        onClick={() => navigate('/chat', {
-                          state: {
-                            contactId: sitter._id,
-                            contactName: sitter.name,
-                            contactImage: sitter.image?.split('/').pop(), // Envoyer juste le nom du fichier
-                            contactRole: 'sitter'
-                          }
-                        })}
+                        type="button"
+                        onClick={() =>
+                          navigate('/chat', {
+                            state: {
+                              contactId: sitter._id,
+                              contactName: sitter.name,
+                              contactImage: sitter.image?.split('/').pop(),
+                              contactRole: 'sitter',
+                            },
+                          })
+                        }
                         className="bg-white border-2 border-pink-500 text-pink-500 hover:bg-pink-50 px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2"
                       >
                         💬 Contacter
                       </button>
                       <button
-                        onClick={() => setShowModal(true)}
+                        type="button"
+                        onClick={openReservationModal}
                         className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center gap-2"
+                        aria-label="Réserver une garde avec ce baby-sitter"
                       >
-                        📅 Réserver
+                        <Calendar className="w-5 h-5" />
+                        Réserver
                       </button>
                     </>
                   )}
@@ -222,10 +294,13 @@ function ProfilPage() {
 
                   {!user && (
                     <button
-                      onClick={() => navigate('/login')}
-                      className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold text-sm"
+                      type="button"
+                      onClick={openReservationModal}
+                      className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition flex items-center gap-2"
+                      aria-label="Se connecter pour réserver une garde"
                     >
-                      Se connecter pour réserver
+                      <Calendar className="w-5 h-5" />
+                      Réserver
                     </button>
                   )}
                 </div>
@@ -254,27 +329,75 @@ function ProfilPage() {
 
         {/* Avis */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Avis ({sitter.reviews})</h3>
-          {sitter.reviews === 0 ? (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <h3 className="text-xl font-bold text-gray-900">Avis ({reviewCount})</h3>
+            {user?.role === 'parente' && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate('/reviews', {
+                    state: { sitterProfileId: sitter._id, sitterName: sitter.name },
+                  })
+                }
+                className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold rounded-xl transition"
+              >
+                Laisser un avis
+              </button>
+            )}
+          </div>
+
+          {profileReviews.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <div className="text-4xl mb-3">⭐</div>
-              <p>Aucun avis pour l'instant.</p>
+              <p>Aucun avis pour l&apos;instant.</p>
               {user?.role === 'parente' && (
-                <p className="text-sm mt-1">Après votre garde, vous pourrez laisser un avis !</p>
+                <p className="text-sm mt-1">Rédigez un avis depuis la page Avis ou après une garde terminée.</p>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-4">
-              <div className="text-5xl font-bold text-gray-900">{sitter.rating}</div>
-              <div>
-                <div className="flex gap-1 mb-1">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} className={`w-5 h-5 ${s <= Math.round(sitter.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`} />
-                  ))}
+            <>
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                <div className="text-5xl font-bold text-gray-900">{reviewAvg.toFixed(1)}</div>
+                <div>
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={`w-5 h-5 ${
+                          s <= Math.round(reviewAvg) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500">{reviewCount} avis clients</p>
                 </div>
-                <p className="text-sm text-gray-500">{sitter.reviews} avis clients</p>
               </div>
-            </div>
+              <ul className="space-y-4">
+                {profileReviews.map((r) => (
+                  <li key={r._id} className="border border-gray-100 rounded-xl p-4 bg-gray-50/80">
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <p className="font-semibold text-gray-900">{r.auteur || 'Parent'}</p>
+                      <span className="text-xs text-gray-500">
+                        {new Date(r.createdAt || r.date).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                    <div className="flex gap-0.5 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= (Number(r.note) || 0)
+                              ? 'text-yellow-400 fill-yellow-400'
+                              : 'text-gray-200 fill-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed">{r.commentaire}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </div>

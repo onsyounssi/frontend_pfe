@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ParentForm = ({ initialData, onSubmit, onCancel }) => {
+const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
   const [formData, setFormData] = useState({
     nom: '',
     ville: '',
@@ -78,16 +78,18 @@ const ParentForm = ({ initialData, onSubmit, onCancel }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+          disabled={isSubmitting}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
         >
           Annuler
         </button>
 
         <button
           type="submit"
-          className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition"
+          disabled={isSubmitting}
+          className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition disabled:opacity-60"
         >
-          {initialData ? 'Modifier' : 'Ajouter'}
+          {isSubmitting ? 'Enregistrement…' : initialData ? 'Modifier' : 'Ajouter'}
         </button>
       </div>
     </form>
