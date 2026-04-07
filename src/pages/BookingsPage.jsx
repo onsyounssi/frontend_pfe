@@ -17,6 +17,7 @@ function BookingPage() {
   const [error, setError] = useState(null);
   const [sitterId, setSitterId] = useState(null);
   const [parentId, setParentId] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     // Récupérer le SitterId
@@ -24,11 +25,12 @@ function BookingPage() {
       setSitterId(location.state.sitterId);
     }
 
-    // Récupérer le ParentId
+    // Récupérer le ParentId et l'utilisateur connecté
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setParentId(user.id || user._id);
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      setParentId(parsedUser.id || parsedUser._id);
     }
   }, [location]);
 
@@ -88,6 +90,33 @@ function BookingPage() {
     const start = formData.startTime || '08:00';
     const end = formData.endTime || '12:00';
 
+    if (!sitterId) {
+      setError('Aucun baby-sitter sélectionné. Retournez sur le profil et réessayez.');
+      setLoading(false);
+      return;
+    }
+
+    if (!user) {
+      setError('Vous devez être connecté pour réserver.');
+      setLoading(false);
+      navigate('/register', { state: { from: '/reservation', sitterId } });
+      return;
+    }
+
+    if (user.role !== 'parente') {
+      setError('Seuls les parents peuvent réserver une garde.');
+      setLoading(false);
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      setError('Session expirée. Veuillez vous reconnecter.');
+      setLoading(false);
+      navigate('/login', { state: { from: '/reservation', sitterId } });
+      return;
+    }
+
     let dateDebutDate = new Date(`${baseDate}T${start}:00`);
     let dateFinDate = new Date(`${baseDate}T${end}:00`);
 
@@ -97,7 +126,8 @@ function BookingPage() {
       dateFin: dateFinDate.toISOString(),
       montantTotale: mockBookingData.totalPrice,
       message: formData.specialNeeds || "",
-      statut: 'pending'
+      statut: 'pending',
+      ...(parentId ? { parentId } : {})
     };
 
     try {
@@ -110,7 +140,12 @@ function BookingPage() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Une erreur est survenue lors de la réservation.');
+      if (err.response?.status === 401) {
+        setError('Session invalide ou expirée. Connectez-vous pour réserver.');
+        navigate('/login', { state: { from: '/reservation', sitterId } });
+      } else {
+        setError(err.response?.data?.message || err.message || 'Une erreur est survenue lors de la réservation.');
+      }
     } finally {
       setLoading(false);
     }

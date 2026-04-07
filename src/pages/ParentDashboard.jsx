@@ -103,7 +103,7 @@ function ParentDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-red-100">
           <p className="text-red-600 font-bold mb-4">{error}</p>
-          <button onClick={fetchBookings} className="bg-[#E91E63] text-white px-6 py-2 rounded-lg">Réessayer</button>
+          <button onClick={fetchBookings} className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition">Réessayer</button>
         </div>
       </div>
     );
@@ -162,7 +162,7 @@ function ParentDashboard() {
           <button
             type="button"
             onClick={() => navigate('/reviews')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E91E63] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-[#D81B60] transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink-500 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-pink-600 transition"
           >
             ⭐ Rédiger un avis
           </button>
@@ -230,7 +230,7 @@ function ParentDashboard() {
                     </button>
                     <button
                       onClick={() => navigate('/chat', { state: { sitterId: booking.sitterId } })}
-                      className="px-4 py-2 bg-[#E91E63] text-white rounded-lg text-sm font-semibold hover:bg-[#D81B60] transition"
+                      className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600 transition"
                     >
                       Contacter
                     </button>

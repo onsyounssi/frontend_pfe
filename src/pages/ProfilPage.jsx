@@ -278,7 +278,7 @@ function ProfilPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={openReservationModal}
+                        onClick={() => navigate('/reservation', { state: { sitterId: sitter._id } })}
                         className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center gap-2"
                         aria-label="Réserver une garde avec ce baby-sitter"
                       >
@@ -295,7 +295,7 @@ function ProfilPage() {
                   {!user && (
                     <button
                       type="button"
-                      onClick={openReservationModal}
+                      onClick={() => navigate('/reservation', { state: { sitterId: sitter._id } })}
                       className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition flex items-center gap-2"
                       aria-label="Se connecter pour réserver une garde"
                     >

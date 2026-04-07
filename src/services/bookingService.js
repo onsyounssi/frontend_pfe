@@ -1,14 +1,18 @@
 // services/bookingService.js
 import axios from "axios";
+import { getToken } from "./authService";
 
 const API_URL = "http://localhost:5000/api/Bookings";
 
-const getAuthHeaders = () => ({
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
+const getAuthHeaders = () => {
+  const token = getToken();
+  return {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  };
+};
 
 const bookingService = {
   // ─────────────────────────────────────────

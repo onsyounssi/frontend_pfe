@@ -38,6 +38,16 @@ function findSitterProfileForUser(profiles, user) {
   );
 }
 
+function splitFullName(fullName) {
+  const name = String(fullName || '').trim();
+  if (!name) return { firstName: '', lastName: '' };
+  const parts = name.split(/\s+/);
+  return {
+    firstName: parts.slice(0, -1).join(' ') || parts[0],
+    lastName: parts.length > 1 ? parts.slice(-1)[0] : '',
+  };
+}
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -108,6 +118,7 @@ function AdminDashboard() {
           ville: u.ville || 'Non spécifié',
           statut: u.statut || 'Actif',
           email: u.email,
+          raw: u,
         }));
 
       const sitterUsers = users.filter((u) => u.role === 'baby-sitter');
@@ -128,6 +139,7 @@ function AdminDashboard() {
                 ? Number(u.note)
                 : '—',
           email: u.email,
+          raw: u,
         };
       });
 
@@ -201,7 +213,32 @@ function AdminDashboard() {
     try {
       setSubmitting(true);
       if (editingItem) {
-        await userService.updateUser(editingItem.id, formData);
+        const { firstName, lastName } = splitFullName(formData.nom || editingItem.nom);
+        const updatePayload = {
+          firstName,
+          lastName,
+          email: editingItem.email,
+          ...(activeTab === 'parents'
+            ? {
+                ville: formData.ville,
+                statut: formData.statut,
+              }
+            : {
+                specialite: formData.specialite,
+                note: Number(formData.note),
+              }),
+        };
+
+        await userService.updateUser(editingItem.id, updatePayload);
+
+        if (activeTab === 'babysitters' && editingItem.profileId) {
+          await sitterService.updateSitter(editingItem.profileId, {
+            prenom: firstName,
+            nom: lastName,
+            specialite: formData.specialite,
+            noteMoyenne: Number(formData.note),
+          });
+        }
       } else {
         const payload = {
           ...formData,
