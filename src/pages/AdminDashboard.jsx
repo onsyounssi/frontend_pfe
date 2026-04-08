@@ -118,6 +118,7 @@ function AdminDashboard() {
           ville: u.ville || 'Non spécifié',
           statut: u.statut || 'Actif',
           email: u.email,
+          phone: u.phone,
           raw: u,
         }));
 
@@ -139,6 +140,7 @@ function AdminDashboard() {
                 ? Number(u.note)
                 : '—',
           email: u.email,
+          phone: u.phone,
           raw: u,
         };
       });
@@ -217,16 +219,17 @@ function AdminDashboard() {
         const updatePayload = {
           firstName,
           lastName,
-          email: editingItem.email,
+          email: formData.email,
+          phone: formData.phone,
           ...(activeTab === 'parents'
             ? {
-                ville: formData.ville,
-                statut: formData.statut,
-              }
+              ville: formData.ville,
+              statut: formData.statut,
+            }
             : {
-                specialite: formData.specialite,
-                note: Number(formData.note),
-              }),
+              specialite: formData.specialite,
+              note: Number(formData.note),
+            }),
         };
 
         await userService.updateUser(editingItem.id, updatePayload);
@@ -240,9 +243,13 @@ function AdminDashboard() {
           });
         }
       } else {
+        const { firstName, lastName } = splitFullName(formData.nom);
         const payload = {
           ...formData,
+          firstName,
+          lastName,
           role: activeTab === 'parents' ? 'parente' : 'baby-sitter',
+          acceptTerms: true, // Auto accept terms Since the admin is creating the user
         };
         await userService.createUser(payload);
       }
@@ -302,9 +309,8 @@ function AdminDashboard() {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-sm font-bold ${
-                  activeTab === tab ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500'
-                }`}
+                className={`flex-1 py-3 text-sm font-bold ${activeTab === tab ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500'
+                  }`}
               >
                 {tab === 'parents' ? 'Parents' : 'Baby-sitters'}
               </button>

@@ -3,12 +3,13 @@ import messageService from '../services/messageService';
 import sitterProfileService from '../services/sitterProfileService';
 import bookingService from '../services/bookingService';
 import Header from '../components/layout/Header';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 function MessagesPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedContactId, setSelectedContactId] = useState(
@@ -16,6 +17,7 @@ function MessagesPage() {
   );
   const [newMessage, setNewMessage] = useState('');
   const [myUserId, setMyUserId] = useState(null);
+  const [myAvatar, setMyAvatar] = useState('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100');
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
@@ -37,12 +39,19 @@ function MessagesPage() {
 
   const quickReplies = getQuickReplies();
 
-  // Initialisation : Récupérer mon ID
+  // Initialisation : Récupérer mon ID et mon avatar
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-      setMyUserId(user.id || user._id);
-      setUserRole(user.role?.toLowerCase());
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        setMyUserId(user.id || user._id);
+        setUserRole(user.role?.toLowerCase());
+        if (user.image && user.image !== "default-avatar.png") {
+          setMyAvatar(`http://localhost:5000/uploads/${user.image}`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
     }
   }, []);
 
@@ -73,10 +82,14 @@ function MessagesPage() {
         const contactId = contact._id;
 
         if (!convosMap.has(contactId)) {
+          const contactImage = contact.image && contact.image !== 'default-avatar.png'
+            ? `http://localhost:5000/uploads/${contact.image}`
+            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100';
+
           convosMap.set(contactId, {
             id: contactId,
             name: `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || contact.nom || 'Utilisateur',
-            avatar: contact.image ? `http://localhost:5000/uploads/${contact.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+            avatar: contactImage,
             messages: [],
             lastUpdate: msg.createdAt,
             city: contact.city || 'Non spécifié',
@@ -99,7 +112,9 @@ function MessagesPage() {
         convosMap.set(redirectedId, {
           id: redirectedId,
           name: location.state?.contactName || "Nouveau Contact",
-          avatar: location.state?.contactImage ? `http://localhost:5000/uploads/${location.state.contactImage}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+          avatar: location.state?.contactImage && location.state.contactImage !== 'default-avatar.png'
+            ? `http://localhost:5000/uploads/${location.state.contactImage}` 
+            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
           messages: [],
           lastUpdate: new Date().toISOString(),
           city: location.state?.contactCity || 'Nouveau Contact',
@@ -301,7 +316,18 @@ function MessagesPage() {
 
                 <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30 scrollbar-hide">
                   {activeChat.messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
+                    <div key={msg.id} className={`flex items-end gap-2 ${msg.sender === 'me' ? 'justify-end flex-row-reverse' : 'justify-start'}`}>
+                      <img
+                        src={msg.sender === 'me' ? myAvatar : activeChat.avatar}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full border border-gray-200 shadow-sm object-cover"
+                        onClick={() => {
+                          if (msg.sender !== 'me' && activeChat.profileId) {
+                            navigate(`/profil/${activeChat.profileId}`);
+                          }
+                        }}
+                        style={{ cursor: msg.sender !== 'me' ? 'pointer' : 'default' }}
+                      />
                       <div className={`max-w-md p-4 rounded-3xl shadow-sm border ${msg.sender === 'me'
                         ? 'bg-pink-500 text-white border-pink-400 rounded-br-none'
                         : 'bg-white text-slate-800 border-slate-100 rounded-bl-none'
@@ -442,7 +468,7 @@ function MessagesPage() {
                     >
                       <div className="relative">
                         <img
-                          src={c.image ? `http://localhost:5000/uploads/${c.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
+                          src={c.image && c.image !== 'default-avatar.png' ? `http://localhost:5000/uploads/${c.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
                           className="w-14 h-14 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition duration-300"
                           alt=""
                         />

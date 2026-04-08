@@ -229,7 +229,17 @@ function ParentDashboard() {
                       Détails
                     </button>
                     <button
-                      onClick={() => navigate('/chat', { state: { sitterId: booking.sitterId } })}
+                      onClick={() => {
+                        const sp = booking.sitterProfileId;
+                        navigate('/chat', {
+                          state: {
+                            contactId: booking.sitterId,
+                            contactName: sp ? `${sp.prenom || ''} ${sp.nom || ''}`.trim() : 'Baby-sitter',
+                            contactImage: sp?.image || null,
+                            contactCity: sp?.localisation || null
+                          }
+                        });
+                      }}
                       className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600 transition"
                     >
                       Contacter

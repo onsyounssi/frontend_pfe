@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Plus } from 'lucide-react';
 
-const SearchBar = ({ searchTerm, onSearchChange, onAddClick, addDisabled }) => {
+const SearchBar = ({ searchTerm, onSearchChange, onAddClick, addDisabled, addButtonLabel = "Ajouter" }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
       <div className="relative">
@@ -21,7 +21,7 @@ const SearchBar = ({ searchTerm, onSearchChange, onAddClick, addDisabled }) => {
         className="inline-flex items-center justify-center gap-2 text-white px-4 py-2.5 rounded-xl font-semibold shadow-sm transition bg-pink-600 hover:bg-pink-700 disabled:opacity-50 disabled:pointer-events-none"
       >
         <Plus className="w-4 h-4" />
-        Ajouter
+        {addButtonLabel}
       </button>
     </div>
   );
