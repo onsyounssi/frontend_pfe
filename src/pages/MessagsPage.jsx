@@ -46,8 +46,10 @@ function MessagesPage() {
       if (user) {
         setMyUserId(user.id || user._id);
         setUserRole(user.role?.toLowerCase());
-        if (user.image && user.image !== "default-avatar.png") {
+        if (user.image && user.image !== "default.jpg" && user.image !== "default-avatar.png") {
           setMyAvatar(`http://localhost:5000/uploads/${user.image}`);
+        } else {
+          setMyAvatar('https://ui-avatars.com/api/?name=' + (user.firstName || 'U') + '&background=random');
         }
       }
     } catch (err) {
@@ -82,9 +84,9 @@ function MessagesPage() {
         const contactId = contact._id;
 
         if (!convosMap.has(contactId)) {
-          const contactImage = contact.image && contact.image !== 'default-avatar.png'
+          const contactImage = contact.image && contact.image !== 'default.jpg' && contact.image !== 'default-avatar.png'
             ? `http://localhost:5000/uploads/${contact.image}`
-            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100';
+            : `https://ui-avatars.com/api/?name=${contact.firstName || 'U'}&background=random`;
 
           convosMap.set(contactId, {
             id: contactId,
@@ -112,9 +114,9 @@ function MessagesPage() {
         convosMap.set(redirectedId, {
           id: redirectedId,
           name: location.state?.contactName || "Nouveau Contact",
-          avatar: location.state?.contactImage && location.state.contactImage !== 'default-avatar.png'
+          avatar: location.state?.contactImage && location.state.contactImage !== 'default.jpg' && location.state.contactImage !== 'default-avatar.png'
             ? `http://localhost:5000/uploads/${location.state.contactImage}` 
-            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+            : `https://ui-avatars.com/api/?name=${location.state?.contactName || 'U'}&background=random`,
           messages: [],
           lastUpdate: new Date().toISOString(),
           city: location.state?.contactCity || 'Nouveau Contact',
@@ -188,7 +190,7 @@ function MessagesPage() {
       const virtualConvo = {
         id: contact._id,
         name: contact.nom,
-        avatar: contact.image ? `http://localhost:5000/uploads/${contact.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+        avatar: contact.image && contact.image !== 'default.jpg' ? `http://localhost:5000/uploads/${contact.image}` : `https://ui-avatars.com/api/?name=${contact.nom || 'U'}&background=random`,
         messages: [],
         lastUpdate: new Date().toISOString(),
         city: contact.localisation || 'Client',
@@ -468,7 +470,7 @@ function MessagesPage() {
                     >
                       <div className="relative">
                         <img
-                          src={c.image && c.image !== 'default-avatar.png' ? `http://localhost:5000/uploads/${c.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
+                                                    src={c.image && c.image !== 'default.jpg' && c.image !== 'default-avatar.png' ? `http://localhost:5000/uploads/${c.image}` : `https://ui-avatars.com/api/?name=${c.nom || 'U'}&background=random`}
                           className="w-14 h-14 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition duration-300"
                           alt=""
                         />

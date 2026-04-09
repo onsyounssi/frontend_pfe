@@ -1,5 +1,5 @@
 // pages/RegisterSitter.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Save, ChevronRight } from 'lucide-react';
 import sitterProfileService from '../services/sitterProfileService';
@@ -10,6 +10,7 @@ const RegisterSitter = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [existingProfileId, setExistingProfileId] = useState(null);
 
   const [formData, setFormData] = useState({
     prenom: '',
@@ -60,6 +61,39 @@ const RegisterSitter = () => {
     setImagePreview(URL.createObjectURL(file));
   };
 
+  // Charger le profil existant si présent
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await sitterProfileService.getMyProfile();
+        if (profile) {
+          setExistingProfileId(profile._id);
+          setFormData({
+            prenom: profile.prenom || '',
+            nom: profile.nom || '',
+            tarifHoraire: profile.tarifHoraire || '',
+            experience: profile.experience || '',
+            localisation: profile.localisation || '',
+            specialite: profile.specialite || '',
+            description: profile.description || '',
+            langues: Array.isArray(profile.langues) ? profile.langues.join(', ') : '',
+            image: null,
+            disponibilites: profile.disponibilites || {
+              lun: false, mar: false, mer: false,
+              jeu: false, ven: false, sam: false, dim: false
+            }
+          });
+          if (profile.image && profile.image !== 'default.jpg') {
+            setImagePreview(`http://localhost:5000/uploads/${profile.image}`);
+          }
+        }
+      } catch (err) {
+        console.log("Aucun profil existant trouvé, prêt pour la création.");
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -83,13 +117,18 @@ const RegisterSitter = () => {
       data.append('disponibilites', JSON.stringify(formData.disponibilites));
       if (formData.image) data.append('image', formData.image);
 
-      const response = await sitterProfileService.createProfile(data);
+      let response;
+      if (existingProfileId) {
+        response = await sitterProfileService.updateProfile(existingProfileId, data);
+      } else {
+        response = await sitterProfileService.createProfile(data);
+      }
 
       if (response.success || response.profile || response._id) {
-        setSuccess('🎉 Profil créé avec succès ! Redirection vers votre tableau de bord...');
+        setSuccess(`🎉 Profil ${existingProfileId ? 'mis à jour' : 'créé'} avec succès ! Redirection...`);
         setTimeout(() => navigate('/baby-sitter'), 1500);
       } else {
-        setError(response.message || 'Erreur lors de la création du profil');
+        setError(response.message || 'Erreur lors de l’enregistrement du profil');
       }
     } catch (err) {
       console.error(err);
@@ -107,7 +146,9 @@ const RegisterSitter = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-pink-500 text-white text-2xl mb-4 shadow-lg">
           🌟
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900">Créez votre fiche professionnelle</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900">
+          {existingProfileId ? 'Modifiez votre' : 'Créez votre'} fiche professionnelle
+        </h1>
         <p className="text-gray-500 mt-2 text-sm">Les parents verront ce profil pour vous contacter et réserver</p>
 
         {/* Étapes */}
@@ -290,7 +331,7 @@ const RegisterSitter = () => {
                   }`}
               >
                 <Save size={16} />
-                {submitting ? 'Enregistrement...' : 'Enregistrer mon profil'}
+                {submitting ? 'Enregistrement...' : existingProfileId ? 'Mettre à jour mon profil' : 'Enregistrer mon profil'}
               </button>
             </div>
           </form>

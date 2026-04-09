@@ -69,6 +69,20 @@ const sitterProfileService = {
       throw error;
     }
   },
+  // Mettre à jour son profil (avec photo)
+  updateProfile: async (id, formData) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/${id}`,
+        formData,
+        getAuthHeaders(true)
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erreur updateProfile:", error);
+      throw error;
+    }
+  },
 };
 
 export default sitterProfileService;

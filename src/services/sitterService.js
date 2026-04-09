@@ -3,6 +3,17 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/SitterProfiles';
 
+// Helper pour inclure le token JWT dans les requêtes protégées
+const getAuthHeaders = (isMultipart = false) => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': isMultipart ? 'multipart/form-data' : 'application/json'
+    }
+  };
+};
+
 const sitterService = {
   // Récupérer tous les sitters
   getAllSitters: async () => {
@@ -29,11 +40,7 @@ const sitterService = {
   // Créer un nouveau sitter
   createSitter: async (formData) => {
     try {
-      const response = await axios.post(`${API_URL}/register`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(`${API_URL}/register`, formData, getAuthHeaders(true));
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la création:', error);
@@ -44,7 +51,7 @@ const sitterService = {
   // Mettre à jour un sitter
   updateSitter: async (id, sitterData) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, sitterData);
+      const response = await axios.put(`${API_URL}/${id}`, sitterData, getAuthHeaders());
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
@@ -55,7 +62,7 @@ const sitterService = {
   // Supprimer un sitter
   deleteSitter: async (id) => {
     try {
-      const response = await axios.delete(`${API_URL}/${id}`);
+      const response = await axios.delete(`${API_URL}/${id}`, getAuthHeaders());
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
