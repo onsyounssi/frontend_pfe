@@ -35,8 +35,29 @@ function SitterDashboard() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await bookingService.getMyBookingsAsSitter();
-      setBookings(Array.isArray(data) ? data : []);
+      let data = await bookingService.getMyBookingsAsSitter();
+      let bookingsList = Array.isArray(data) ? data : [];
+
+      // Traitement automatique (par défaut) pour terminer les gardes dont la date de fin est dépassée
+      let hasUpdates = false;
+      const now = new Date();
+      for (let b of bookingsList) {
+        if (b.statut === 'confirmed' && new Date(b.dateFin) < now) {
+          try {
+            await bookingService.updateStatus(b._id, 'completed');
+            hasUpdates = true;
+          } catch (e) {
+            console.error("Erreur de mise à jour automatique:", e);
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        data = await bookingService.getMyBookingsAsSitter();
+        bookingsList = Array.isArray(data) ? data : [];
+      }
+
+      setBookings(bookingsList);
       setError(null);
     } catch (err) {
       console.error('Erreur chargement bookings sitter:', err);
@@ -115,6 +136,19 @@ function SitterDashboard() {
         parentName: booking.parentId?.firstName ? `${booking.parentId.firstName} ${booking.parentId.lastName}` : 'Parent'
       }
     });
+  };
+
+  const handleComplete = async (bookingId) => {
+    if (!window.confirm('Voulez-vous marquer cette garde comme terminée ?')) return;
+    setProcessingId(bookingId);
+    try {
+      await bookingService.updateStatus(bookingId, 'completed');
+      await fetchBookings();
+    } catch (err) {
+      alert('Erreur lors de la mise à jour du statut');
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   return (
@@ -205,11 +239,10 @@ function SitterDashboard() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-3 text-sm font-bold transition border-b-2 ${
-                tab === t.key
+              className={`px-4 py-3 text-sm font-bold transition border-b-2 ${tab === t.key
                   ? 'text-pink-700 border-b-pink-700'
                   : 'text-gray-500 border-b-transparent hover:text-gray-700'
-              }`}
+                }`}
             >
               {t.label}
             </button>
@@ -330,18 +363,29 @@ function SitterDashboard() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => navigate('/chat', {
-                        state: {
-                          contactId: booking.parentId._id || booking.parentId,
-                          contactName: `${booking.parentId.firstName || ''} ${booking.parentId.lastName || ''}`.trim() || 'Parent',
-                          contactRole: 'parent'
-                        }
-                      })}
-                      className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-bold hover:bg-pink-600 transition"
-                    >
-                      💬 Contacter
-                    </button>
+                    <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                      <button
+                        onClick={() => navigate('/chat', {
+                          state: {
+                            contactId: booking.parentId._id || booking.parentId,
+                            contactName: `${booking.parentId.firstName || ''} ${booking.parentId.lastName || ''}`.trim() || 'Parent',
+                            contactRole: 'parent'
+                          }
+                        })}
+                        className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-bold hover:bg-pink-600 transition"
+                      >
+                        💬 Contacter
+                      </button>
+                      {booking.statut === 'confirmed' && (
+                        <button
+                          onClick={() => handleComplete(booking._id)}
+                          disabled={processingId === booking._id}
+                          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition active:scale-95 disabled:opacity-50"
+                        >
+                          {processingId === booking._id ? '⏳...' : '🏁 Terminer'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               )}

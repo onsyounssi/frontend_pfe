@@ -64,6 +64,8 @@ function Register() {
     if (!formData.role) newErrors.role = 'Veuillez sélectionner un rôle';
     if (!formData.password || formData.password.length < 6) {
       newErrors.password = 'Minimum 6 caractères requis';
+    } else if (formData.password.length > 8) {
+      newErrors.password = 'Maximum 8 caractères autorisés';
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
@@ -106,8 +108,19 @@ function Register() {
   };
 
   return (
-     <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+    <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Bouton Retour Accueil */}
+        <button
+          onClick={() => navigate('/')}
+          className="mb-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-semibold text-sm group"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Retour à l'accueil
+        </button>
+
         <div className="mx-auto max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Left Panel - Branding */}
@@ -167,7 +180,7 @@ function Register() {
             </div>
 
 
-           <div className="p-10">
+            <div className="p-10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-gray-500 font-semibold">Inscription</p>
@@ -225,7 +238,7 @@ function Register() {
                   <label className="block text-sm font-semibold text-gray-800 mb-2">Téléphone</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth="2" strokeLinecap="round"/></svg>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeWidth="2" strokeLinecap="round" /></svg>
                     </div>
                     <input
                       name="phone"
@@ -244,7 +257,7 @@ function Register() {
                   <label className="block text-sm font-semibold text-gray-800 mb-2">Email</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth="2" strokeLinecap="round"/></svg>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth="2" strokeLinecap="round" /></svg>
                     </div>
                     <input
                       name="email"
@@ -258,50 +271,96 @@ function Register() {
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
 
-                {/* Rôle */}
+                {/* Rôle - Design Premium */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">Rôle</label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className={`w-full rounded-2xl border ${errors.role ? 'border-red-500' : 'border-gray-200'} bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition`}
-                  >
-                    <option value="">Choisir un rôle...</option>
-                    <option value="parente">Parente</option>
-                    <option value="baby-sitter">Baby-sitter</option>
-                  </select>
-                  {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Rôle *</label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors duration-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                        <path d="m9 12 2 2 4-4" />
+                      </svg>
+                    </div>
+
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className={`w-full appearance-none rounded-2xl border ${errors.role ? 'border-red-500 shadow-sm shadow-red-50' : 'border-gray-200 hover:border-gray-300'} bg-white pl-11 pr-10 py-3.5 text-sm text-gray-900 focus:ring-4 focus:ring-pink-500/10 focus:border-pink-500 outline-none transition-all duration-200 shadow-sm`}
+                    >
+                      <option value="">Choisir un rôle...</option>
+                      <option value="parente">Parent</option>
+                      <option value="baby-sitter">Baby-sitter</option>
+                    </select>
+
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-gray-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
+                  {errors.role && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{errors.role}</p>}
                 </div>
 
-                {/* Mots de passe */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+                {/* Mots de passe - Design Harmonisé */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Mot de passe */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">Mot de passe</label>
-                    <input
-                      name="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="******"
-                      className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 outline-none transition`}
-                    />
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Mot de passe *</label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                      </div>
+                      <input
+                        name="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        maxLength={8}
+                        placeholder="••••••••"
+                        className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
+                      />
+                    </div>
+                    {errors.password && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.password}</p>}
                   </div>
+
+                  {/* Confirmation */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">Confirmation</label>
-                    <input
-                      name="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="******"
-                      className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 outline-none transition`}
-                    />
-                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Confirmation *</label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <path d="m9 12 2 2 4-4" />
+                        </svg>
+                      </div>
+                      <input
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        maxLength={8}
+                        placeholder="••••••••"
+                        className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
+                      />
+                    </div>
+                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.confirmPassword}</p>}
                   </div>
                 </div>
 
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-wait' : 'bg-pink-600 hover:bg-pink-700 hover:scale-[1.01]'}`}
+                >
+                  {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
+                </button>
                 <div className="flex items-center justify-between py-2">
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
@@ -317,13 +376,10 @@ function Register() {
                 </div>
                 {errors.acceptTerms && <p className="text-red-500 text-xs -mt-2">{errors.acceptTerms}</p>}
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition ${isLoading ? 'bg-pink-400 cursor-wait' : 'bg-pink-600 hover:bg-pink-700 hover:scale-[1.01]'}`}
-                >
-                  {isLoading ? 'Inscription en cours...' : 'S’inscrire'}
-                </button>
+                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                  <p class="font-semibold text-gray-900 mb-2">Conseil</p>
+                  <p class="text-gray-600">Choisissez votre rôle et complétez vos informations pour un matching rapide.</p>
+                </div>
               </form>
             </div>
           </div>

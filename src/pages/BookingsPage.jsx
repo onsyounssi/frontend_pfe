@@ -8,6 +8,7 @@ import PaymentStep from '../components/PaymentStep';
 import StepSummary from '../components/StepSummary';
 import { getToken } from '../services/authService';
 import bookingService from '../services/bookingService';
+import sitterProfileService from '../services/sitterProfileService';
 
 function BookingPage() {
   const location = useLocation();
@@ -18,6 +19,7 @@ function BookingPage() {
   const [sitterId, setSitterId] = useState(null);
   const [parentId, setParentId] = useState(null);
   const [user, setUser] = useState(null);
+  const [sitterData, setSitterData] = useState(null);
 
   useEffect(() => {
     // Récupérer le SitterId
@@ -34,6 +36,21 @@ function BookingPage() {
     }
   }, [location]);
 
+  useEffect(() => {
+    const fetchSitter = async () => {
+      if (sitterId) {
+        try {
+          const data = await sitterProfileService.getSitterById(sitterId);
+          setSitterData(data);
+        } catch (err) {
+          console.error('Erreur lors de la récupération du profil baby-sitter:', err);
+          setError('Impossible de récupérer les informations du baby-sitter.');
+        }
+      }
+    };
+    fetchSitter();
+  }, [sitterId]);
+
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
@@ -48,12 +65,21 @@ function BookingPage() {
   });
 
   // Données pour le composant StepSummary
-  const mockBookingData = {
-    date: formData.date || '2026-03-31',
-    startTime: formData.startTime || '08:00',
-    endTime: formData.endTime || '12:00',
-    childrenCount: formData.childrenCount || 1,
-    totalPrice: 45 // Montant fixe pour l'exemple
+  const calculateTotalPrice = () => {
+    if (!sitterData || !formData.startTime || !formData.endTime) return 0;
+    const start = new Date(`1970-01-01T${formData.startTime}:00`);
+    const end = new Date(`1970-01-01T${formData.endTime}:00`);
+    const hours = (end - start) / (1000 * 60 * 60);
+    const count = formData.childrenCount || 1;
+    return sitterData.tarifHoraire * hours * count;
+  };
+
+  const bookingData = {
+    date: formData.date,
+    startTime: formData.startTime,
+    endTime: formData.endTime,
+    childrenCount: formData.childrenCount,
+    totalPrice: calculateTotalPrice()
   };
 
   // handleCheckout supprimé car intégré dans handleSubmit
@@ -67,6 +93,30 @@ function BookingPage() {
   };
 
   const handleNext = () => {
+    if (currentStep === 1) {
+      if (!formData.date || !formData.startTime || !formData.endTime) {
+        setError('Veuillez remplir la date, l\'heure de début et l\'heure de fin.');
+        return;
+      }
+      if (formData.startTime >= formData.endTime) {
+        setError('L\'heure de début doit être antérieure à l\'heure de fin.');
+        return;
+      }
+      setError(null);
+    }
+
+    if (currentStep === 2) {
+      if (!formData.childrenCount || !formData.specialNeeds) {
+        setError('Veuillez remplir tous les champs (nombre d\'enfants et besoins spéciaux).');
+        return;
+      }
+      if (formData.childrenCount < 1) {
+        setError('Le nombre d\'enfants doit être au moins de 1.');
+        return;
+      }
+      setError(null);
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -86,13 +136,20 @@ function BookingPage() {
     // Construction des dates avec Mongoose Date format (YYYY-MM-DDTHH:mm:ss.sssZ)
     // On assume que formData.date est format 'YYYY-MM-DD' et start/endTime est 'HH:mm'
     // Pour simplifier, on envoie directement les bons formats si possible, sinon on construit:
-    const baseDate = formData.date || new Date().toISOString().split('T')[0];
-    const start = formData.startTime || '08:00';
-    const end = formData.endTime || '12:00';
+    const baseDate = formData.date;
+    const start = formData.startTime;
+    const end = formData.endTime;
+
+    if (start >= end) {
+      setError('L\'heure de début doit être antérieure à l\'heure de fin.');
+      setLoading(false);
+      return;
+    }
 
     if (!sitterId) {
       setError('Aucun baby-sitter sélectionné. Retournez sur le profil et réessayez.');
       setLoading(false);
+      navigate('/recherche-sitters');
       return;
     }
 
@@ -124,7 +181,7 @@ function BookingPage() {
       sitterProfileId: sitterId,
       dateDebut: dateDebutDate.toISOString(),
       dateFin: dateFinDate.toISOString(),
-      montantTotale: mockBookingData.totalPrice,
+      childrenCount: formData.childrenCount || 1,
       message: formData.specialNeeds || "",
       statut: 'pending',
       ...(parentId ? { parentId } : {})
@@ -136,7 +193,7 @@ function BookingPage() {
       if (data.success && data.booking) {
         console.log('Réservation créée:', data.booking);
         alert('Votre demande de réservation a été envoyée ! Elle est en attente de confirmation par le baby-sitter.');
-        navigate('/parente');
+        navigate('/recherche-sitters');
       }
     } catch (err) {
       console.error(err);
@@ -159,7 +216,7 @@ function BookingPage() {
       case 2:
         return <StepsDetails formData={formData} onInputChange={handleInputChange} />;
       case 3:
-        return <StepSummary bookingData={mockBookingData} />;
+        return <StepSummary bookingData={bookingData} />;
       default:
         return <DateTimeForm formData={formData} onInputChange={handleInputChange} />;
     }
@@ -194,6 +251,7 @@ function BookingPage() {
               </button>
             )}
             <div className="flex-1"></div>
+
             <button
               onClick={currentStep === 3 ? handleSubmit : handleNext}
               className={`px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition font-semibold flex items-center justify-center ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}

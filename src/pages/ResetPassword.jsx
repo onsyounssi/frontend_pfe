@@ -1,9 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -21,8 +23,9 @@ export default function ResetPassword() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
+
+    if (password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
       return;
     }
 
@@ -31,9 +34,10 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-      const response = await axios.put(
-        `http://localhost:5000/api/Users/reset-password/${token}`,
-        { password },
+      const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const response = await axios.post(
+        `${API}/api/Users/reset-password`,
+        { email, token, password },
         { headers: { "Content-Type": "application/json" } }
       );
 

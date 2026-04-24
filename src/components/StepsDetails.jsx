@@ -21,7 +21,7 @@ function StepDetails ({ formData, onInputChange }){
       </div>
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Besoins spéciaux (optionnel)
+          Besoins spéciaux
         </label>
         <textarea
           name="specialNeeds"

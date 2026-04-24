@@ -11,6 +11,15 @@ export default function ForgotPassword() {
 
   const navigate = useNavigate();
 
+  /*const handleSubmit = async () => {
+ await fetch("/api/auth/forgot-password", {
+   method: "POST",
+   headers: {"Content-Type": "application/json"},
+   body: JSON.stringify({ email }),
+ });
+};*/
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -25,11 +34,13 @@ export default function ForgotPassword() {
     }
 
     try {
+      const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
       const response = await axios.post(
-        "http://localhost:5000/api/Users/forgot-password",
+        `${API}/api/Users/forgot-password`,
         { email },
         { headers: { "Content-Type": "application/json" } }
       );
+
       setMessage(response.data.message || "Email de réinitialisation envoyé avec succès !");
       setPreviewUrl(response.data.previewUrl || "");
       setEmail("");

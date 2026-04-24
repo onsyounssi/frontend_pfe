@@ -104,6 +104,17 @@ function Login() {
     <main>
       <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Bouton Retour Accueil */}
+          <button
+            onClick={() => navigate('/')}
+            className="mb-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-semibold text-sm group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            Retour à l'accueil
+          </button>
+
           <div className="mx-auto max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2">
 

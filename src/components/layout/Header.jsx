@@ -93,12 +93,12 @@ function Header() {
         <nav className="hidden lg:flex items-center gap-2">
           {!user ? (
             <>
-              <Link to="/" className={navLinkClass("/")}>Accueil</Link>
+              <Link to="/" className={navLinkClass("/")}>Comment ça marche</Link>
               <Link to="/register-sitter" className={navLinkClass("/register-sitter")}>Devenir Sitter</Link>
               <Link to="/login" className="text-slate-500 font-bold px-4 py-2 hover:text-pink-500 transition">Connexion</Link>
-              <Link to="/register">
+              <Link to="/reservation">
                 <button className="bg-pink-500 text-white px-6 py-2.5 rounded-2xl font-bold hover:bg-pink-600 shadow-md shadow-pink-200 transition-all active:scale-95">
-                  Rejoindre
+                  Réserver
                 </button>
               </Link>
             </>

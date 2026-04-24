@@ -3,12 +3,18 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/SitterProfiles";
 
-const getAuthHeaders = (multipart = false) => ({
-  headers: {
-    "Content-Type": multipart ? "multipart/form-data" : "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
+const getAuthHeaders = (multipart = false) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.warn("Attention : Aucun token d'authentification trouvé dans le localStorage.");
+  }
+  return {
+    headers: {
+      "Content-Type": multipart ? "multipart/form-data" : "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
 
 const sitterProfileService = {
   // Créer son profil baby-sitter (avec photo)

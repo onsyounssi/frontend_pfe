@@ -74,9 +74,24 @@ function Home() {
                 <div className="bg-white/10 border border-white/20 rounded-3xl p-5 backdrop-blur">
                   <h3 className="text-white font-semibold text-lg mb-3">Pourquoi SmartBabyCare ?</h3>
                   <div className="space-y-4">
-                    <FeatureItem icon="shield" text="Profils vérifiés & sécurité renforcée." />
-                    <FeatureItem icon="heart" text="Matching IA selon vos besoins." />
-                    <FeatureItem icon="check" text="Réservation rapide & transparente." />
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-white/15">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield w-5 h-5 text-pink-200" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
+                        {/* Remplacer par des composants SVG si nécessaire */}
+                      </div>
+                      <p className="text-white">Profils vérifiés & sécurité renforcée.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-white/15">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart w-5 h-5 text-pink-200" aria-hidden="true"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg>
+                      </div>
+                      <p className="text-white">Matching IA selon vos besoins.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-white/15">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big w-5 h-5 text-pink-200" aria-hidden="true"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>                      </div>
+                      <p className="text-white">Réservation rapide & transparente.</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -90,21 +105,30 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h4 className="text-3xl font-bold text-gray-900 mb-12">Pourquoi Choisir SmartBabyCare ?</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <CardArgument 
-              title="Recherche Intelligente" 
-              desc="Trouvez des profils basés sur vos critères et les besoins spécifiques de votre enfant."
-              icon="search"
-            />
-            <CardArgument 
-              title="Matching IA" 
-              desc="Notre algorithme d'IA vous recommande les baby-sitters avec le meilleur taux de succès."
-              icon="heart"
-            />
-            <CardArgument 
-              title="Profils Vérifiés" 
-              desc="Sécurité maximale grâce à la vérification d'identité et des antécédents."
-              icon="shield"
-            />
+           <div class="p-6 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition duration-300">
+            <div class="inline-flex items-center justify-center p-3 rounded-full bg-pink-100 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search w-6 h-6 text-pink-500" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></div>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">
+              Recherche Intelligente</h4>
+            <p class="text-gray-600">
+              Trouvez des profils basés sur vos critères et les besoins spécifiques de votre enfant.</p>
+          </div>
+           <div class="p-6 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition duration-300">
+            <div class="inline-flex items-center justify-center p-3 rounded-full bg-pink-100 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart w-6 h-6 text-pink-500" aria-hidden="true"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg></div>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">
+              Matching IA</h4>
+            <p class="text-gray-600">
+              Notre algorithme d'IA vous recommande les baby-sitters avec le meilleur taux de succès.</p>
+          </div>
+           <div class="p-6 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition duration-300">
+            <div class="inline-flex items-center justify-center p-3 rounded-full bg-pink-100 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield w-6 h-6 text-pink-500" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">
+              Profils Vérifiés</h4>
+            <p class="text-gray-600">
+             Sécurité maximale grâce à la vérification d'identité et des antécédents.</p>
+          </div>
           </div>
         </div>
       </section>

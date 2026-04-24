@@ -11,6 +11,7 @@ function ParentDashboard() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [payingId, setPayingId] = useState(null); // Pour le bouton de paiement
+  const [processingId, setProcessingId] = useState(null); // Pour le bouton de terminaison
   const [reviewHistory, setReviewHistory] = useState([]);
 
   useEffect(() => {
@@ -50,8 +51,29 @@ function ParentDashboard() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await bookingService.getMyBookingsAsParent();
-      setBookings(Array.isArray(data) ? data : []);
+      let data = await bookingService.getMyBookingsAsParent();
+      let bookingsList = Array.isArray(data) ? data : [];
+
+      // Traitement automatique (par défaut) pour terminer les gardes dont la date de fin est dépassée
+      let hasUpdates = false;
+      const now = new Date();
+      for (let b of bookingsList) {
+        if (b.statut === 'confirmed' && new Date(b.dateFin) < now) {
+          try {
+            await bookingService.updateStatus(b._id, 'completed');
+            hasUpdates = true;
+          } catch (e) {
+            console.error("Erreur de mise à jour automatique:", e);
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        data = await bookingService.getMyBookingsAsParent();
+        bookingsList = Array.isArray(data) ? data : [];
+      }
+
+      setBookings(bookingsList);
       await loadReviewHistory();
     } catch (err) {
       console.error(err);
@@ -95,6 +117,20 @@ function ParentDashboard() {
       alert("Erreur lors de l'appel à Stripe.");
     } finally {
       setPayingId(null);
+    }
+  };
+
+  const handleComplete = async (bookingId) => {
+    if (!window.confirm('Avez-vous bien terminé cette garde ? Cette action est irréversible.')) return;
+    setProcessingId(bookingId);
+    try {
+      await bookingService.updateStatus(bookingId, 'completed');
+      await fetchBookings();
+    } catch (err) {
+      console.error(err);
+      alert('Erreur lors de la mise à jour du statut.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -222,7 +258,16 @@ function ParentDashboard() {
                         {payingId === booking._id ? '⏳ Redirection...' : '💳 Payer'}
                       </button>
                     )}
-                    <button 
+                    {booking.statut === 'confirmed' && (
+                      <button
+                        onClick={() => handleComplete(booking._id)}
+                        disabled={processingId === booking._id}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition active:scale-95 disabled:opacity-50"
+                      >
+                        {processingId === booking._id ? '⏳...' : '🏁 Terminer'}
+                      </button>
+                    )}
+                    <button
                       onClick={() => booking.sitterProfileId?._id && navigate(`/profil/${booking.sitterProfileId._id}`)}
                       className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
                     >

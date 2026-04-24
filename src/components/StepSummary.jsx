@@ -1,6 +1,6 @@
 import React from 'react';
 
-function StepSummary ({ bookingData }) {
+function StepSummary({ bookingData }) {
   const { date, startTime, endTime, childrenCount, totalPrice } = bookingData;
   return (
     <div>
@@ -21,7 +21,7 @@ function StepSummary ({ bookingData }) {
           </div>
           <div className="flex justify-between pt-3 border-t border-gray-200">
             <span className="text-gray-600">Total estimé</span>
-            <span className="text-2xl font-bold text-pink-600">DNT{totalPrice}</span>
+            <span className="text-2xl font-bold text-pink-600">{totalPrice}</span>
           </div>
         </div>
       </div>
