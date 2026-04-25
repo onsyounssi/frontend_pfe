@@ -6,6 +6,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [resetUrl, setResetUrl] = useState(""); // Nouveau : lien direct
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,13 +44,18 @@ export default function ForgotPassword() {
 
       setMessage(response.data.message || "Email de réinitialisation envoyé avec succès !");
       setPreviewUrl(response.data.previewUrl || "");
+      setResetUrl(response.data.resetUrl || ""); // Capture du lien direct
       setEmail("");
     } catch (err) {
+      console.error("Full error object:", err);
       if (err.response) {
-        const errorMessage = err.response.data?.message || err.response.data?.error || "Une erreur est survenue.";
-        setError(errorMessage);
+        const serverError = err.response.data?.error || "";
+        const serverCode = err.response.data?.code || "";
+        const errorMessage = err.response.data?.message || "Une erreur est survenue.";
+
+        setError(`${errorMessage} ${serverError ? '(' + serverError + ')' : ''} ${serverCode ? '[Code: ' + serverCode + ']' : ''}`);
       } else {
-        setError("Impossible de contacter le serveur. Veuillez réessayer plus tard.");
+        setError("Impossible de contacter le serveur. Veuillez vérifier votre connexion.");
       }
     } finally {
       setLoading(false);
@@ -133,6 +139,23 @@ export default function ForgotPassword() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>{message}</span>
+
+                      {/* Bouton de secours si l'email n'est pas configuré */}
+                      {resetUrl && (
+                        <div className="mt-6 w-full">
+                          <p className="text-xs text-gray-500 mb-2 italic">L'envoi d'e-mail est en pause. Cliquez ici pour continuer :</p>
+                          <a
+                            href={resetUrl}
+                            className="inline-flex items-center justify-center w-full px-6 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition shadow-md"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                            Réinitialiser maintenant
+                          </a>
+                        </div>
+                      )}
                     </div>
                     {previewUrl && (
                       <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="ml-8 mt-3 inline-block bg-white text-green-800 font-semibold border border-green-300 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors self-start shadow-sm">

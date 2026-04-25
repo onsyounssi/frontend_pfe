@@ -204,10 +204,11 @@ function SitterDashboard() {
             <div className="bg-pink-50 rounded-2xl p-6 text-gray-800 shadow-lg">
               <div className="flex items-center gap-5">
                 <div className="w-16 h-16 rounded-2xl bg-pink-300 overflow-hidden border-2 border-pink-400">
-                  {profile.image
-                    ? <img src={`http://localhost:5000/uploads/${profile.image}`} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-2xl">🌟</div>
-                  }
+                  <img 
+                    src={profile.image ? `http://localhost:5000/uploads/${profile.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.prenom + ' ' + profile.nom)}&background=fde7f3&color=ec4899&bold=true`} 
+                    alt="" 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900">{profile.prenom || ''} {profile.nom}</h3>

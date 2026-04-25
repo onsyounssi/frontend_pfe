@@ -35,7 +35,7 @@ const FindSitters = () => {
         reviews: sitter.nbAvis || 0,
         specialty: sitter.specialite || 'Garde d\'enfants',
         available: checkAvailability(sitter.disponibilites),
-        image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+        image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : null,
         description: sitter.description,
         experience: sitter.experience,
         langues: sitter.langues,

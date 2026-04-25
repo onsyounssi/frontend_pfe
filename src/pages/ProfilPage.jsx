@@ -99,6 +99,28 @@ function ProfilPage() {
       setBookingError('Veuillez sélectionner la date et les horaires.');
       return;
     }
+
+    // Vérification : Date passée
+    const selectedDate = new Date(booking.dateDebut);
+    const today = new Date();
+    // On permet de réserver pour aujourd'hui, mais pas avant aujourd'hui
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      setBookingError("La date de début ne peut pas être dans le passé.");
+      return;
+    }
+
+    // Nouvelle vérification : Année et Mois
+    if (selectedDate.getFullYear() !== today.getFullYear()) {
+      setBookingError("La réservation doit être faite pour l'année en cours (" + today.getFullYear() + ").");
+      return;
+    }
+    
+    if (selectedDate.getMonth() !== today.getMonth()) {
+      setBookingError("La réservation doit être faite pour le mois en cours.");
+      return;
+    }
     if (new Date(booking.dateDebut) >= new Date(booking.dateFin)) {
       setBookingError("L'heure de fin doit être après l'heure de début.");
       return;
@@ -205,10 +227,11 @@ function ProfilPage() {
           <div className="md:flex">
             {/* Photo */}
             <div className="md:w-1/3">
-              {sitter.image
-                ? <img src={sitter.image} alt={sitter.name} className="w-full h-64 md:h-full object-cover" />
-                : <div className="w-full h-64 md:h-full bg-gradient-to-br from-indigo-400 to-pink-400 flex items-center justify-center text-6xl">🌟</div>
-              }
+              <img
+                src={sitter.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(sitter.name)}&background=fde7f3&color=ec4899&bold=true&size=512`}
+                alt={sitter.name}
+                className="w-full h-64 md:h-full object-cover"
+              />
             </div>
             {/* Infos */}
             <div className="md:w-2/3 p-6">
@@ -363,9 +386,8 @@ function ProfilPage() {
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
-                        className={`w-5 h-5 ${
-                          s <= Math.round(reviewAvg) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'
-                        }`}
+                        className={`w-5 h-5 ${s <= Math.round(reviewAvg) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'
+                          }`}
                       />
                     ))}
                   </div>
@@ -385,11 +407,10 @@ function ProfilPage() {
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className={`w-4 h-4 ${
-                            star <= (Number(r.note) || 0)
+                          className={`w-4 h-4 ${star <= (Number(r.note) || 0)
                               ? 'text-yellow-400 fill-yellow-400'
                               : 'text-gray-200 fill-gray-200'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>

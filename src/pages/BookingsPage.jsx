@@ -98,6 +98,28 @@ function BookingPage() {
         setError('Veuillez remplir la date, l\'heure de début et l\'heure de fin.');
         return;
       }
+
+      // Vérification : Date passée
+      const selectedDate = new Date(formData.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // On compare uniquement la date, pas l'heure
+
+      if (selectedDate < today) {
+        setError("Vous ne pouvez pas choisir une date passée. Veuillez choisir une date à partir d'aujourd'hui.");
+        return;
+      }
+
+      // Nouvelle vérification : Année et Mois
+      if (selectedDate.getFullYear() !== today.getFullYear()) {
+        setError("La réservation doit être faite pour l'année en cours (" + today.getFullYear() + ").");
+        return;
+      }
+
+      if (selectedDate.getMonth() !== today.getMonth()) {
+        setError("La réservation doit être faite pour le mois en cours.");
+        return;
+      }
+
       if (formData.startTime >= formData.endTime) {
         setError('L\'heure de début doit être antérieure à l\'heure de fin.');
         return;
