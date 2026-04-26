@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from "../services/authService";
+import Toast from '../components/common/Toast';
 
 function Register() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ function Register() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [toast, setToast] = useState(null); // Notifications Premium
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -62,10 +64,8 @@ function Register() {
     }
 
     if (!formData.role) newErrors.role = 'Veuillez sélectionner un rôle';
-    if (!formData.password || formData.password.length < 6) {
-      newErrors.password = 'Minimum 6 caractères requis';
-    } else if (formData.password.length > 8) {
-      newErrors.password = 'Maximum 8 caractères autorisés';
+    if (!formData.password || formData.password.length !== 8) {
+      newErrors.password = 'Le mot de passe doit faire exactement 8 caractères';
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
@@ -96,7 +96,10 @@ function Register() {
           localStorage.setItem('user', JSON.stringify(response.user));
           if (response.token) localStorage.setItem('token', response.token);
         }
-        setTimeout(() => navigate('/complete-profile'), 1000);
+
+        setToast({ message: 'Inscription réussie ! Bienvenue sur SmartBabyCare.', type: 'success' });
+
+        setTimeout(() => navigate('/complete-profile'), 3000);
       } else {
         setServerError(response.message || "Erreur d'inscription");
       }
@@ -109,6 +112,13 @@ function Register() {
 
   return (
     <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Bouton Retour Accueil */}
         <button

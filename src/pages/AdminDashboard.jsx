@@ -9,6 +9,7 @@ import ParentForm from '../components/forms/ParentForm';
 import BabysitterForm from '../components/forms/BabysitterForm';
 import userService from '../services/userService';
 import sitterService from '../services/sitterService';
+import Toast from '../components/common/Toast';
 
 function profileBelongsToUser(profile, userId) {
   const uid = String(userId);
@@ -72,6 +73,7 @@ function AdminDashboard() {
   const [editingItem, setEditingItem] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     if (!searchParams.get('tab')) {
@@ -205,7 +207,7 @@ function AdminDashboard() {
       await loadUsers(true);
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Erreur lors de la suppression.';
-      alert(msg);
+      setToast({ message: msg, type: 'error' });
     } finally {
       setDeletingId(null);
     }
@@ -244,21 +246,27 @@ function AdminDashboard() {
         }
       } else {
         const { firstName, lastName } = splitFullName(formData.nom);
+        // On construit un objet propre sans le champ "nom" original 
         const payload = {
-          ...formData,
           firstName,
           lastName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
           role: activeTab === 'parents' ? 'parente' : 'baby-sitter',
-          acceptTerms: true, // Auto accept terms Since the admin is creating the user
+          acceptTerms: true,
+          statut: formData.statut || 'Actif',
+          ...(activeTab === 'parents' ? { ville: formData.ville } : { specialite: formData.specialite })
         };
         await userService.createUser(payload);
       }
       setShowModal(false);
       setEditingItem(null);
       await loadUsers(true);
+      setToast({ message: `Utilisateur ${editingItem ? 'mis à jour' : 'créé'} avec succès !`, type: 'success' });
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Erreur réseau.';
-      alert(msg);
+      setToast({ message: msg, type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -298,6 +306,13 @@ function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="flex">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
 

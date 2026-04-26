@@ -29,6 +29,11 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const villesTunisie = [
+    'Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Gabès', 'Ariana',
+    'Gafsa', 'La Marsa', 'Monastir', 'Hammamet', 'Ben Arous', 'Nabeul'
+  ];
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
@@ -50,14 +55,18 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Ville
           </label>
-          <input
-            type="text"
+          <select
             name="ville"
             value={formData.ville}
             onChange={handleChange}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20"
-          />
+          >
+            <option value="">Sélectionnez une ville</option>
+            {villesTunisie.map(ville => (
+              <option key={ville} value={ville}>{ville}</option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -75,7 +84,7 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
         </div>
 
         <div>
-           <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Téléphone (Numéro tunisien)
           </label>
           <input
@@ -99,12 +108,15 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
             <input
               type="password"
               name="password"
+              placeholder="Exactement 8 caractères"
               value={formData.password || ''}
               onChange={handleChange}
               required
-              minLength={6}
+              minLength={8}
+              maxLength={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20"
             />
+            <p className="text-[10px] text-gray-400 mt-1 italic">Note: Le mot de passe doit faire exactement 8 caractères.</p>
           </div>
         )}
 

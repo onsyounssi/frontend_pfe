@@ -24,8 +24,8 @@ export default function ResetPassword() {
     }
 
 
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
+    if (password.length !== 8) {
+      setError("Le mot de passe doit faire exactement 8 caractères.");
       return;
     }
 
@@ -162,9 +162,10 @@ export default function ResetPassword() {
                             name="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Min. 6 caractères"
+                            placeholder="8 caractères"
                             className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition pl-11"
                             type="password"
+                            maxLength="8"
                             disabled={loading}
                           />
                         </div>
@@ -188,6 +189,7 @@ export default function ResetPassword() {
                             placeholder="Répéter le mot de passe"
                             className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition pl-11"
                             type="password"
+                            maxLength="8"
                             disabled={loading}
                           />
                         </div>

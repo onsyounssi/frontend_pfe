@@ -10,12 +10,15 @@ import { getToken } from '../services/authService';
 import bookingService from '../services/bookingService';
 import sitterProfileService from '../services/sitterProfileService';
 
+import Toast from '../components/common/Toast';
+
 function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null); // Pour les notifications premium
   const [sitterId, setSitterId] = useState(null);
   const [parentId, setParentId] = useState(null);
   const [user, setUser] = useState(null);
@@ -104,8 +107,8 @@ function BookingPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // On compare uniquement la date, pas l'heure
 
-      if (selectedDate < today) {
-        setError("Vous ne pouvez pas choisir une date passée. Veuillez choisir une date à partir d'aujourd'hui.");
+      if (selectedDate <= today) {
+        setError("La réservation doit être faite au moins un jour à l'avance. Veuillez choisir une date à partir de demain.");
         return;
       }
 
@@ -214,8 +217,11 @@ function BookingPage() {
 
       if (data.success && data.booking) {
         console.log('Réservation créée:', data.booking);
-        alert('Votre demande de réservation a été envoyée ! Elle est en attente de confirmation par le baby-sitter.');
-        navigate('/recherche-sitters');
+        setToast({ message: 'Votre demande de réservation a été envoyée ! Elle est en attente de confirmation.', type: 'success' });
+
+        setTimeout(() => {
+          navigate('/recherche-sitters');
+        }, 3000);
       }
     } catch (err) {
       console.error(err);
@@ -247,6 +253,14 @@ function BookingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <BookingHeader onBack={handlePrevious} showBackButton={currentStep > 1} />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       {/* Main content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -11,6 +11,12 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Force les champs à être vides par défaut au chargement de la page
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+  }, []);
+
   //const navigate = useNavigate();
 
   const handleForgotPassword = () => {
@@ -37,6 +43,12 @@ function Login() {
     }
     if (!password) {
       setError("Le mot de passe est requis.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length !== 8) {
+      setError("Le mot de passe doit faire exactement 8 caractères.");
       setIsLoading(false);
       return;
     }
@@ -195,8 +207,13 @@ function Login() {
 
                 {/* Affichage des erreurs */}
                 {error && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm">
-                    {error}
+                  <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-2xl text-red-700 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-circle">
+                        <circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" />
+                      </svg>
+                    </div>
+                    <span className="font-medium">{error}</span>
                   </div>
                 )}
 
@@ -216,6 +233,7 @@ function Login() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="adresse@gmail.com"
+                          autoComplete="off"
                           className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11"
                           type="email"
                         />
@@ -236,7 +254,9 @@ function Login() {
                         name="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="******"
+                        placeholder="********"
+                        autoComplete="new-password"
+                        maxLength="8"
                         className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition pl-11"
                         type="password"
                       />
@@ -277,30 +297,6 @@ function Login() {
 
                       <span>Mot de passe oublié ?</span>
                     </button>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
-                    <p className="font-semibold text-gray-900 mb-2">Accès démo</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <p className="text-xs text-gray-500">Admin</p>
-                        <p className="font-mono text-xs">admin@demo.com</p>
-                        <p className="font-mono text-xs">Password123!</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Parent</p>
-                        <p className="font-mono text-xs">parent@demo.com</p>
-                        <p className="font-mono text-xs">Password123!</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Sitter</p>
-                        <p className="font-mono text-xs">sitter@demo.com</p>
-                        <p className="font-mono text-xs">Password123!</p>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 mt-2 text-xs">
-                      Utilisez les identifiants démo pour tester les différents rôles.
-                    </p>
                   </div>
                 </form>
               </div>

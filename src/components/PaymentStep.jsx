@@ -3,6 +3,14 @@ import React, { useState } from 'react';
 function PaymentStep({ formData, onInputChange }) {
   const [paymentMethod, setPaymentMethod] = useState('creditCard');
 
+  // Force les champs à être vides au montage
+  React.useEffect(() => {
+    const emptyEvent = { target: { name: '', value: '' } };
+    ['cardName', 'cardNumber', 'cardExpiry', 'cardCVC'].forEach(name => {
+      onInputChange({ target: { name, value: '' } });
+    });
+  }, []);
+
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-800 border-b pb-2">Informations de Paiement</h3>
@@ -35,8 +43,9 @@ function PaymentStep({ formData, onInputChange }) {
               name="cardName"
               value={formData.cardName || ''}
               onChange={onInputChange}
+              autoComplete="off"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition"
-              placeholder="John Doe"
+              placeholder=""
             />
           </div>
 
@@ -48,8 +57,9 @@ function PaymentStep({ formData, onInputChange }) {
                 name="cardNumber"
                 value={formData.cardNumber || ''}
                 onChange={onInputChange}
+                autoComplete="off"
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition"
-                placeholder="0000 0000 0000 0000"
+                placeholder=""
                 maxLength="19"
               />
               <span className="absolute left-3 top-2.5 text-gray-400">💳</span>
@@ -64,8 +74,9 @@ function PaymentStep({ formData, onInputChange }) {
                 name="cardExpiry"
                 value={formData.cardExpiry || ''}
                 onChange={onInputChange}
+                autoComplete="off"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition"
-                placeholder="MM/AA"
+                placeholder=""
                 maxLength="5"
               />
             </div>
@@ -76,8 +87,9 @@ function PaymentStep({ formData, onInputChange }) {
                 name="cardCVC"
                 value={formData.cardCVC || ''}
                 onChange={onInputChange}
+                autoComplete="off"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition"
-                placeholder="123"
+                placeholder=""
                 maxLength="4"
               />
             </div>

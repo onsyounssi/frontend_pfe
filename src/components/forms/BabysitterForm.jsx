@@ -107,12 +107,15 @@ const BabysitterForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
             <input
               type="password"
               name="password"
+              placeholder="Exactement 8 caractères"
               value={formData.password || ''}
               onChange={handleChange}
               required
-              minLength={6}
+              minLength={8}
+              maxLength={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20"
             />
+            <p className="text-[10px] text-gray-400 mt-1 italic">Note: Le mot de passe doit faire exactement 8 caractères.</p>
           </div>
         )}
 
