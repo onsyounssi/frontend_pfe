@@ -235,10 +235,6 @@ function ReviewPage() {
             <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
               Avis et retours
             </h1>
-            <p className="mt-4 text-lg text-gray-600">
-              Votre avis est affiché sur le profil du baby-sitter concerné et conservé dans votre
-              historique sur le tableau de bord parent.
-            </p>
           </div>
 
           {isParent && myReviews.length > 0 && (

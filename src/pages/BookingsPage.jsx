@@ -151,6 +151,8 @@ function BookingPage() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       setError(null);
+    } else {
+      navigate(-1);
     }
   };
 
@@ -252,7 +254,7 @@ function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <BookingHeader onBack={handlePrevious} showBackButton={currentStep > 1} />
+      <BookingHeader onBack={handlePrevious} showBackButton={true} />
 
       {toast && (
         <Toast

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from "../services/authService";
 import Toast from '../components/common/Toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 function Register() {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [toast, setToast] = useState(null); // Notifications Premium
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -328,13 +331,20 @@ function Register() {
                       </div>
                       <input
                         name="password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={handleChange}
                         maxLength={8}
                         placeholder="••••••••"
-                        className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
+                        className={`w-full rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-12 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                     {errors.password && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.password}</p>}
                   </div>
@@ -351,13 +361,20 @@ function Register() {
                       </div>
                       <input
                         name="confirmPassword"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         maxLength={8}
                         placeholder="••••••••"
-                        className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-4 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
+                        className={`w-full rounded-2xl border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} bg-white pl-11 pr-12 py-3 text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition shadow-sm`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors focus:outline-none"
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                     {errors.confirmPassword && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.confirmPassword}</p>}
                   </div>

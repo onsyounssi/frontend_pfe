@@ -9,6 +9,7 @@ import ParentForm from '../components/forms/ParentForm';
 import BabysitterForm from '../components/forms/BabysitterForm';
 import userService from '../services/userService';
 import sitterService from '../services/sitterService';
+import { AlertTriangle } from 'lucide-react';
 import Toast from '../components/common/Toast';
 
 function profileBelongsToUser(profile, userId) {
@@ -74,6 +75,7 @@ function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, name: '' });
 
   useEffect(() => {
     if (!searchParams.get('tab')) {
@@ -141,6 +143,7 @@ function AdminDashboard() {
               : u.note != null
                 ? Number(u.note)
                 : '—',
+          nbAvis: profile?.nbAvis != null ? profile.nbAvis : 0,
           email: u.email,
           phone: u.phone,
           raw: u,
@@ -199,12 +202,21 @@ function AdminDashboard() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
+  const handleDelete = (id) => {
+    const user = [...parents, ...babysitters].find((u) => u.id === id);
+    setConfirmDelete({ show: true, id, name: user?.nom || 'cet utilisateur' });
+  };
+
+  const executeDelete = async () => {
+    const { id } = confirmDelete;
+    if (!id) return;
+
     try {
       setDeletingId(id);
+      setConfirmDelete({ show: false, id: null, name: '' });
       await userService.deleteUser(id);
       await loadUsers(true);
+      setToast({ message: 'Utilisateur supprimé avec succès.', type: 'success' });
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Erreur lors de la suppression.';
       setToast({ message: msg, type: 'error' });
@@ -433,6 +445,45 @@ function AdminDashboard() {
 
       <Modal isOpen={showModal} onClose={() => !submitting && setShowModal(false)} title={getModalTitle()}>
         {renderForm()}
+      </Modal>
+
+      {/* Modal de confirmation de suppression style Google/Premium */}
+      <Modal
+        isOpen={confirmDelete.show}
+        onClose={() => setConfirmDelete({ show: false, id: null, name: '' })}
+        title="Confirmation de suppression"
+      >
+        <div className="text-center p-2">
+          <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-red-100">
+            <AlertTriangle size={40} strokeWidth={2.5} />
+          </div>
+
+          <h4 className="text-lg font-bold text-gray-900 mb-2">Attention : Action irréversible</h4>
+          <p className="text-gray-600 mb-8 leading-relaxed">
+            Êtes-vous sûr de vouloir supprimer définitivement <strong>{confirmDelete.name}</strong> ?
+            <br />
+            <span className="text-sm mt-2 block font-medium text-red-500">
+              Toutes les données associées (profil, réservations, messages) seront supprimées de la base de données.
+            </span>
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete({ show: false, id: null, name: '' })}
+              className="flex-1 px-6 py-3 border-2 border-gray-100 rounded-2xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-200 transition-all duration-200"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={executeDelete}
+              className="flex-1 px-6 py-3 bg-red-600 text-white rounded-2xl font-bold shadow-lg shadow-red-200 hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

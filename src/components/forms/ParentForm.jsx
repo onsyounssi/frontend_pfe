@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
   const [formData, setFormData] = useState({
@@ -6,6 +7,7 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
     ville: '',
     statut: 'Actif'
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -105,17 +107,26 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Mot de passe
             </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Exactement 8 caractères"
-              value={formData.password || ''}
-              onChange={handleChange}
-              required
-              minLength={8}
-              maxLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="Exactement 8 caractères"
+                value={formData.password || ''}
+                onChange={handleChange}
+                required
+                minLength={8}
+                maxLength={8}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             <p className="text-[10px] text-gray-400 mt-1 italic">Note: Le mot de passe doit faire exactement 8 caractères.</p>
           </div>
         )}

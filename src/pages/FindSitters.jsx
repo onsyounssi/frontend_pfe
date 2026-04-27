@@ -4,6 +4,7 @@ import Header from '../components/layout/Header';
 import SitterCard from '../components/SitterCard';
 import { Funnel, Loader } from 'lucide-react';
 import sitterService from '../services/sitterService';
+import reviewService from '../services/reviewService';
 
 const FindSitters = () => {
   const [sitters, setSitters] = useState([]);
@@ -24,23 +25,61 @@ const FindSitters = () => {
   const loadSitters = async () => {
     try {
       setLoading(true);
-      const data = await sitterService.getAllSitters();
-      // Transformer les données du backend pour correspondre au format attendu par SitterCard
-      const formattedSitters = data.map(sitter => ({
-        id: sitter._id,
-        name: `${sitter.prenom || ''} ${sitter.nom}`,
-        city: sitter.localisation || 'Non spécifié',
-        price: sitter.tarifHoraire,
-        rating: sitter.noteMoyenne || 0,
-        reviews: sitter.nbAvis || 0,
-        specialty: sitter.specialite || 'Garde d\'enfants',
-        available: checkAvailability(sitter.disponibilites),
-        image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : null,
-        description: sitter.description,
-        experience: sitter.experience,
-        langues: sitter.langues,
-        disponibilites: sitter.disponibilites
-      }));
+      // Charger les sitters et tous les avis en parallèle pour une meilleure performance
+      const [sittersData, allReviews] = await Promise.all([
+        sitterService.getAllSitters(),
+        reviewService.getReviews().catch(() => [])
+      ]);
+
+      // Récupérer aussi les avis du cache local (localStorage)
+      const localRaw = localStorage.getItem('sbc_reviews_v1');
+      const localReviews = localRaw ? JSON.parse(localRaw) : [];
+
+      // Fusionner et calculer les stats pour chaque sitter
+      const formattedSitters = sittersData.map(sitter => {
+        const sid = String(sitter._id);
+
+        // On récupère tous les avis liés à ce sitter (API + Local)
+        const allPossibleReviews = [...allReviews, ...localReviews].filter(r => {
+          const rSid = r.sitterProfileId?._id || r.sitterProfileId;
+          return String(rSid) === sid;
+        });
+
+        // Suppression des doublons pour éviter le sur-comptage
+        const seen = new Set();
+        const reviewsForThisSitter = [];
+        for (const r of allPossibleReviews) {
+          const key = r._id ? String(r._id) : `${r.auteur}-${r.date}-${r.commentaire}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            reviewsForThisSitter.push(r);
+          }
+        }
+
+        // Logique de calcul identique à ProfilPage.jsx
+        const nbAvis = reviewsForThisSitter.length > 0 ? reviewsForThisSitter.length : (sitter.nbAvis || 0);
+        const totalNote = reviewsForThisSitter.reduce((acc, r) => acc + (Number(r.note) || 0), 0);
+        const noteMoyenne = reviewsForThisSitter.length > 0
+          ? totalNote / reviewsForThisSitter.length
+          : (sitter.noteMoyenne || 0);
+
+        return {
+          id: sitter._id,
+          name: `${sitter.prenom || ''} ${sitter.nom}`,
+          city: sitter.localisation || 'Non spécifié',
+          price: sitter.tarifHoraire,
+          rating: noteMoyenne ? Number(noteMoyenne).toFixed(1) : 0,
+          reviews: nbAvis,
+          specialty: sitter.specialite || "Garde d'enfants",
+          available: checkAvailability(sitter.disponibilites),
+          image: sitter.image ? `http://localhost:5000/uploads/${sitter.image}` : null,
+          description: sitter.description,
+          experience: sitter.experience,
+          langues: sitter.langues,
+          disponibilites: sitter.disponibilites
+        };
+      });
+
       setSitters(formattedSitters);
       setError(null);
     } catch (err) {

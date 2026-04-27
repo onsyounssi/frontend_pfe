@@ -25,6 +25,7 @@ const BabysittersTable = ({ babysitters, onEdit, onDelete, onViewProfile, deleti
           <th className="px-6 py-3 font-semibold uppercase text-xs tracking-wide">Email</th>
           <th className="px-6 py-3 font-semibold uppercase text-xs tracking-wide">Spécialité</th>
           <th className="px-6 py-3 font-semibold uppercase text-xs tracking-wide">Note</th>
+          <th className="px-6 py-3 font-semibold uppercase text-xs tracking-wide">Avis</th>
           <th className="px-6 py-3 font-semibold uppercase text-xs tracking-wide">Actions</th>
         </tr>
       </thead>
@@ -41,6 +42,9 @@ const BabysittersTable = ({ babysitters, onEdit, onDelete, onViewProfile, deleti
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{babysitter.specialite}</td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">
               {typeof babysitter.note === 'number' ? babysitter.note.toFixed(1) : babysitter.note}
+            </td>
+            <td className="px-6 py-3 text-gray-500 whitespace-nowrap">
+              {babysitter.nbAvis || 0} avis
             </td>
             <td className="px-6 py-3">
               <ActionButtons
