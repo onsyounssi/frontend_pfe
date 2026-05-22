@@ -18,6 +18,15 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
         email: initialData.email || '',
         phone: initialData.phone || ''
       });
+    } else {
+      setFormData({
+        nom: '',
+        ville: '',
+        statut: 'Actif',
+        email: '',
+        phone: '',
+        password: ''
+      });
     }
   }, [initialData]);
 
@@ -81,6 +90,7 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
             value={formData.email || ''}
             onChange={handleChange}
             required={!initialData}
+            autoComplete="new-password"
             className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20"
           />
         </div>
@@ -117,6 +127,7 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
                 required
                 minLength={8}
                 maxLength={8}
+                autoComplete="new-password"
                 className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20 pr-10"
               />
               <button
@@ -148,21 +159,25 @@ const ParentForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
       </div>
 
       <div className="flex gap-3 mt-6">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-        >
-          Annuler
-        </button>
+        {!initialData && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+          >
+            Annuler
+          </button>
+        )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition disabled:opacity-60"
+          className={`${!initialData ? 'flex-1' : 'w-full'} px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition disabled:opacity-60`}
         >
-          {isSubmitting ? 'Enregistrement…' : initialData ? 'Modifier' : 'Ajouter'}
+          {isSubmitting
+            ? (initialData ? 'Sauvegarde…' : 'Enregistrement…')
+            : (initialData ? 'Sauvegarder' : 'Enregistrer')}
         </button>
       </div>
     </form>

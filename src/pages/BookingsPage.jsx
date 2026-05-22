@@ -107,8 +107,8 @@ function BookingPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // On compare uniquement la date, pas l'heure
 
-      if (selectedDate <= today) {
-        setError("La réservation doit être faite au moins un jour à l'avance. Veuillez choisir une date à partir de demain.");
+      if (selectedDate > today) {
+        setError("La date de réservation ne peut pas être dans le passé. Veuillez choisir une date à partir d'aujourd'hui ou plus tard.");
         return;
       }
 
