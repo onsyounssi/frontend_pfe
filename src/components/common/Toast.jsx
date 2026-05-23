@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { CheckCircle, AlertCircle, X } from 'lucide-react';
 
-const Toast = ({ message, type = 'success', onClose, duration = 5000 }) => {
+const Toast = ({ message, subMessage, type = 'success', onClose, duration = 6000 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -13,31 +13,35 @@ const Toast = ({ message, type = 'success', onClose, duration = 5000 }) => {
   const bgColor = type === 'success' ? 'bg-green-50' : 'bg-red-50';
   const borderColor = type === 'success' ? 'border-green-200' : 'border-red-200';
   const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+  const subTextColor = type === 'success' ? 'text-green-600' : 'text-red-500';
   const iconColor = type === 'success' ? 'text-green-500' : 'text-red-500';
 
   return (
-    <div className={`fixed top-24 right-6 z-[2000] flex items-center gap-3 px-5 py-4 rounded-2xl border ${bgColor} ${borderColor} shadow-xl animate-in slide-in-from-right duration-300 min-w-[300px] max-w-md`}>
-      <div className={`flex-shrink-0 ${iconColor}`}>
+    <div className={`fixed top-24 right-6 z-[2000] flex items-start gap-3 px-5 py-4 rounded-2xl border ${bgColor} ${borderColor} shadow-xl animate-in slide-in-from-right duration-300 min-w-[320px] max-w-md`}>
+      <div className={`flex-shrink-0 mt-0.5 ${iconColor}`}>
         {type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
       </div>
       <div className="flex-1">
         <p className={`text-sm font-bold ${textColor}`}>{message}</p>
+        {subMessage && (
+          <p className={`text-xs mt-1 ${subTextColor} leading-relaxed`}>{subMessage}</p>
+        )}
       </div>
-      <button 
+      <button
         onClick={onClose}
-        className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+        className="text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
       >
         <X className="w-4 h-4" />
       </button>
-      
+
       {/* Barre de progression */}
       <div className="absolute bottom-0 left-0 h-1 bg-black/5 w-full rounded-b-2xl overflow-hidden">
-        <div 
+        <div
           className={`h-full ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-progress`}
           style={{ animationDuration: `${duration}ms` }}
         />
       </div>
-      
+
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes progress {
           from { width: 100%; }

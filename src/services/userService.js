@@ -58,6 +58,17 @@ export const userService = {
       console.error('Erreur deleteUser:', error);
       throw error;
     }
+  },
+
+  // Réinitialiser le mot de passe par l'administrateur
+  adminResetPassword: async (id, newPassword) => {
+    try {
+      const response = await axios.post(`${API_URL}/admin-reset-password/${id}`, { newPassword }, getAuthHeaders());
+      return response.data;
+    } catch (error) {
+      console.error('Erreur adminResetPassword:', error);
+      throw error;
+    }
   }
 };
 

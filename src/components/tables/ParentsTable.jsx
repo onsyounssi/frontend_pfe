@@ -37,6 +37,11 @@ const ParentsTable = ({ parents, onEdit, onDelete, deletingId }) => {
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{parent.nom}</td>
             <td className="px-6 py-3 text-gray-600 max-w-[200px] truncate" title={parent.email}>
               {parent.email || '—'}
+              {parent.resetRequested && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title="Demande de réinitialisation de mot de passe">
+                  Demande Reset
+                </span>
+              )}
             </td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">
               <div className="flex items-center gap-2">
@@ -51,6 +56,7 @@ const ParentsTable = ({ parents, onEdit, onDelete, deletingId }) => {
               <ActionButtons
                 onEdit={() => onEdit(parent)}
                 onDelete={() => onDelete(parent.id)}
+                onResetPassword={() => onEdit({ ...parent, action: 'reset_password' })}
                 deleteDisabled={deletingId === parent.id}
                 editDisabled={!!deletingId}
               />

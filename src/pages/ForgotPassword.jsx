@@ -42,10 +42,12 @@ export default function ForgotPassword() {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      setMessage(response.data.message || "Email de réinitialisation envoyé avec succès !");
-      setPreviewUrl(response.data.previewUrl || "");
-      setResetUrl(response.data.resetUrl || ""); // Capture du lien direct
+      setMessage(response.data.message || "Votre demande de réinitialisation a été envoyée à l'administrateur.");
+      setPreviewUrl("");
+      setResetUrl(""); // Plus besoin de lien direct
       setEmail("");
+      
+      setTimeout(() => navigate('/'), 3000);
     } catch (err) {
       console.error("Full error object:", err);
       if (err.response) {
@@ -100,7 +102,7 @@ export default function ForgotPassword() {
 
                   <h2 className="mt-6 text-4xl font-extrabold tracking-tight">MOT DE PASSE OUBLIÉ ?</h2>
                   <p className="mt-4 text-white/85 leading-relaxed text-lg">
-                    Pas d'inquiétude, cela arrive à tout le monde. Entrez votre adresse e-mail et nous vous enverrons les instructions pour réinitialiser votre accès en toute sécurité.
+                    Pas d'inquiétude, cela arrive à tout le monde. Entrez votre adresse e-mail pour envoyer une demande de réinitialisation sécurisée à l'administrateur.
                   </p>
                 </div>
               </div>
@@ -202,7 +204,7 @@ export default function ForgotPassword() {
                         </svg>
                         Envoi en cours...
                       </>
-                    ) : 'Envoyer le lien de réinitialisation'}
+                    ) : 'Envoyer la demande à l\'administrateur'}
                   </button>
                 </form>
 

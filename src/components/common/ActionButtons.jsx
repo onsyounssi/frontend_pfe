@@ -1,7 +1,7 @@
 import React from 'react';
-import { Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Pencil, Trash2, ExternalLink, Key } from 'lucide-react';
 
-const ActionButtons = ({ onEdit, onDelete, onViewProfile, deleteDisabled, editDisabled }) => {
+const ActionButtons = ({ onEdit, onDelete, onViewProfile, onResetPassword, deleteDisabled, editDisabled }) => {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {onViewProfile && (
@@ -13,6 +13,18 @@ const ActionButtons = ({ onEdit, onDelete, onViewProfile, deleteDisabled, editDi
         >
           <ExternalLink className="w-4 h-4" />
           <span className="hidden sm:inline">Profil</span>
+        </button>
+      )}
+      {onResetPassword && (
+        <button
+          type="button"
+          onClick={onResetPassword}
+          disabled={editDisabled}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-orange-200 text-orange-700 hover:bg-orange-50 transition disabled:opacity-50"
+          title="Réinitialiser le mot de passe"
+        >
+          <Key className="w-4 h-4" />
+          <span className="hidden sm:inline">Mot de passe</span>
         </button>
       )}
       <button

@@ -38,6 +38,11 @@ const BabysittersTable = ({ babysitters, onEdit, onDelete, onViewProfile, deleti
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{babysitter.nom}</td>
             <td className="px-6 py-3 text-gray-600 max-w-[200px] truncate" title={babysitter.email}>
               {babysitter.email || '—'}
+              {babysitter.resetRequested && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title="Demande de réinitialisation de mot de passe">
+                  Demande Reset
+                </span>
+              )}
             </td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">{babysitter.specialite}</td>
             <td className="px-6 py-3 text-gray-800 whitespace-nowrap">
@@ -50,6 +55,7 @@ const BabysittersTable = ({ babysitters, onEdit, onDelete, onViewProfile, deleti
               <ActionButtons
                 onEdit={() => onEdit(babysitter)}
                 onDelete={() => onDelete(babysitter.id)}
+                onResetPassword={() => onEdit({ ...babysitter, action: 'reset_password' })}
                 onViewProfile={
                   babysitter.profileId && onViewProfile
                     ? () => onViewProfile(babysitter.profileId)

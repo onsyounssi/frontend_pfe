@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
 import SearchBar from '../components/common/SearchBar';
@@ -76,6 +76,7 @@ function AdminDashboard() {
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, name: '' });
+  const resetRequestsCountRef = useRef(0);
 
   useEffect(() => {
     if (!searchParams.get('tab')) {
@@ -100,11 +101,11 @@ function AdminDashboard() {
     }
   }, [navigate]);
 
-  const loadUsers = async (isRefresh = false) => {
+  const loadUsers = async (isRefresh = false, isSilent = false) => {
     try {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
+      if (isRefresh && !isSilent) setRefreshing(true);
+      else if (!isSilent) setLoading(true);
+      if (!isSilent) setError(null);
 
       const [usersData, profilesData] = await Promise.all([
         userService.getAllUsers(),
@@ -123,6 +124,7 @@ function AdminDashboard() {
           statut: u.statut || 'Actif',
           email: u.email,
           phone: u.phone,
+          resetRequested: u.resetRequested,
           raw: u,
         }));
 
@@ -146,23 +148,41 @@ function AdminDashboard() {
           nbAvis: profile?.nbAvis != null ? profile.nbAvis : 0,
           email: u.email,
           phone: u.phone,
+          resetRequested: u.resetRequested,
           raw: u,
         };
       });
 
       setParents(parentsData);
       setBabysitters(sittersData);
+
+      const totalResetRequests = parentsData.filter(u => u.resetRequested).length + sittersData.filter(u => u.resetRequested).length;
+      if (isSilent && totalResetRequests > resetRequestsCountRef.current) {
+        setToast({ message: "Nouvelle demande de réinitialisation de mot de passe reçue !", type: 'success' });
+      }
+      resetRequestsCountRef.current = totalResetRequests;
+
     } catch (err) {
-      console.error(err);
-      setError('Impossible de charger les utilisateurs. Vérifiez la connexion et vos droits admin.');
+      if (!isSilent) {
+        console.error(err);
+        setError('Impossible de charger les utilisateurs. Vérifiez la connexion et vos droits admin.');
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (!isSilent) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
   useEffect(() => {
     loadUsers(false);
+
+    // Polling toutes les 15 secondes pour détecter de nouvelles demandes en arrière-plan
+    const interval = setInterval(() => {
+      loadUsers(false, true);
+    }, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => {
@@ -289,6 +309,9 @@ function AdminDashboard() {
   };
 
   const getModalTitle = () => {
+    if (editingItem?.action === 'reset_password') {
+      return `Réinitialiser le mot de passe (${editingItem.nom})`;
+    }
     if (editingItem) {
       return `Modifier ${activeTab === 'parents' ? 'le parent' : 'le baby-sitter'}`;
     }
@@ -296,6 +319,61 @@ function AdminDashboard() {
   };
 
   const renderForm = () => {
+    if (editingItem?.action === 'reset_password') {
+      return (
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const newPassword = e.target.newPassword.value;
+          if (newPassword.length !== 8) {
+             setToast({ message: "Le mot de passe doit faire exactement 8 caractères.", type: 'error' });
+             return;
+          }
+          setSubmitting(true);
+          try {
+            await userService.adminResetPassword(editingItem.id, newPassword);
+            setToast({
+              message: "Mot de passe modifié avec succès !",
+              subMessage: `Un email de confirmation a été envoyé à ${editingItem.email} avec le nouveau mot de passe et un lien de connexion.`,
+              type: 'success'
+            });
+            setShowModal(false);
+            setEditingItem(null);
+            await loadUsers(true);
+          } catch (err) {
+            const serverMsg = err.response?.data?.message || "Erreur lors de la réinitialisation du mot de passe.";
+            const detail = err.response?.data?.detail;
+            setToast({
+              message: "Échec de la réinitialisation",
+              subMessage: detail ? `${serverMsg} — ${detail}` : serverMsg,
+              type: 'error'
+            });
+          } finally {
+            setSubmitting(false);
+          }
+        }}>
+          <div className="mb-4 text-sm text-gray-600">
+            {editingItem.resetRequested && (
+              <div className="mb-3 p-3 bg-red-50 text-red-700 rounded-xl font-medium border border-red-100 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Cet utilisateur a demandé une réinitialisation de son mot de passe.
+              </div>
+            )}
+            Saisissez le nouveau mot de passe pour <strong>{editingItem.nom}</strong>.<br/>
+            <span className="text-pink-600 font-medium">L'email sera envoyé à {editingItem.email}.</span><br/>
+            <span className="text-gray-500 text-xs mt-1 block">⚠️ Le mot de passe ne sera modifié que si l'envoi de l'email réussit.</span>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe (8 caractères)</label>
+            <input type="text" name="newPassword" required minLength={8} maxLength={8} className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-600/20" placeholder="Ex: Abc12345" />
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition">Annuler</button>
+            <button type="submit" disabled={submitting} className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition disabled:opacity-60">{submitting ? 'Envoi en cours...' : 'Réinitialiser et envoyer l\'email'}</button>
+          </div>
+        </form>
+      );
+    }
+
     if (activeTab === 'parents') {
       return (
         <ParentForm

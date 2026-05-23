@@ -11,6 +11,7 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Force les champs à être vides par défaut au chargement de la page
@@ -21,8 +22,41 @@ function Login() {
 
   //const navigate = useNavigate();
 
-  const handleForgotPassword = () => {
-    navigate("/forgot-password");
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Veuillez saisir votre email d'abord, puis cliquez sur 'Mot de passe oublié ?'");
+      setSuccessMessage("");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const response = await fetch(`${API}/api/Users/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(data.message || "Votre demande de réinitialisation a été envoyée à l'administrateur.");
+        setTimeout(() => navigate('/'), 3000);
+      } else {
+        setError(data.message || "Erreur lors de la demande de réinitialisation.");
+      }
+    } catch (error) {
+      console.error("Erreur forgot password:", error);
+      setError("Impossible de contacter le serveur. Veuillez réessayer plus tard.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 
@@ -31,6 +65,7 @@ function Login() {
 
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
     // Validation de base : on vérifie que l'utilisateur a saisi ses infos
     if (!email && !password) {
@@ -207,7 +242,7 @@ function Login() {
                   </div>
                 </div>
 
-                {/* Affichage des erreurs */}
+                {/* Affichage des erreurs et succès */}
                 {error && (
                   <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-2xl text-red-700 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -216,6 +251,17 @@ function Login() {
                       </svg>
                     </div>
                     <span className="font-medium">{error}</span>
+                  </div>
+                )}
+
+                {successMessage && (
+                  <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-2xl text-green-700 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check-circle">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    </div>
+                    <span className="font-medium">{successMessage}</span>
                   </div>
                 )}
 
