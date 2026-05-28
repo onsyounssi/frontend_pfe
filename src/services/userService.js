@@ -63,8 +63,18 @@ export const userService = {
   // Réinitialiser le mot de passe par l'administrateur
   adminResetPassword: async (id, newPassword) => {
     try {
-      const response = await axios.post(`${API_URL}/admin-reset-password/${id}`, { newPassword }, getAuthHeaders());
-      return response.data;
+      const response = await axios.post(
+        `${API_URL}/admin-reset-password/${id}`,
+        { newPassword },
+        { ...getAuthHeaders(), timeout: 45000 }
+      );
+      const data = response.data || {};
+      if (data.success === false || data.passwordUpdated === false) {
+        const err = new Error(data.message || 'Échec de la réinitialisation');
+        err.response = { data };
+        throw err;
+      }
+      return data;
     } catch (error) {
       console.error('Erreur adminResetPassword:', error);
       throw error;

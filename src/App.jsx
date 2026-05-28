@@ -17,6 +17,7 @@ import SuccessPage from './pages/SuccessPage';
 import ChatWidget from "./components/ChatWidget";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import PasswordResetSuccess from "./pages/PasswordResetSuccess";
 
 import FindSitters from './pages/FindSitters';
 
@@ -33,6 +34,11 @@ function App() {
         <Route
           path="/reset-password"
           element={<ResetPassword />}
+        />
+
+        <Route
+          path="/password-reset-success"
+          element={<PasswordResetSuccess />}
         />
 
         <Route path="/login" element={<Login />} />

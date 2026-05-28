@@ -323,29 +323,36 @@ function AdminDashboard() {
       return (
         <form onSubmit={async (e) => {
           e.preventDefault();
-          const newPassword = e.target.newPassword.value;
+          const newPassword = e.target.newPassword.value.trim();
           if (newPassword.length !== 8) {
              setToast({ message: "Le mot de passe doit faire exactement 8 caractères.", type: 'error' });
              return;
           }
+          const userId = editingItem.id || editingItem._id || editingItem.raw?._id;
+          if (!userId) {
+            setToast({ message: "Erreur : identifiant utilisateur introuvable.", type: 'error' });
+            return;
+          }
           setSubmitting(true);
           try {
-            await userService.adminResetPassword(editingItem.id, newPassword);
+            const result = await userService.adminResetPassword(userId, newPassword);
             setToast({
               message: "Mot de passe modifié avec succès !",
-              subMessage: `Un email de confirmation a été envoyé à ${editingItem.email} avec le nouveau mot de passe et un lien de connexion.`,
-              type: 'success'
+              subMessage: `Email envoyé à ${result.userEmail || editingItem.email}. L'utilisateur recevra automatiquement le nouveau mot de passe et le lien de confirmation dans sa boîte mail.`,
+              type: 'success',
             });
+
             setShowModal(false);
             setEditingItem(null);
-            await loadUsers(true);
+            await loadUsers(true, true);
           } catch (err) {
-            const serverMsg = err.response?.data?.message || "Erreur lors de la réinitialisation du mot de passe.";
-            const detail = err.response?.data?.detail;
+            const data = err.response?.data || {};
+            const serverMsg = data.message || err.message || "Erreur lors de la réinitialisation du mot de passe.";
+            const detail = data.detail || data.emailError;
             setToast({
               message: "Échec de la réinitialisation",
-              subMessage: detail ? `${serverMsg} — ${detail}` : serverMsg,
-              type: 'error'
+              subMessage: detail ? `${serverMsg}\n${detail}` : serverMsg,
+              type: 'error',
             });
           } finally {
             setSubmitting(false);
@@ -360,7 +367,7 @@ function AdminDashboard() {
             )}
             Saisissez le nouveau mot de passe pour <strong>{editingItem.nom}</strong>.<br/>
             <span className="text-pink-600 font-medium">L'email sera envoyé à {editingItem.email}.</span><br/>
-            <span className="text-gray-500 text-xs mt-1 block">⚠️ Le mot de passe ne sera modifié que si l'envoi de l'email réussit.</span>
+            <span className="text-gray-500 text-xs mt-1 block">Le mot de passe sera modifié uniquement après envoi réussi de l&apos;email. Le lien de confirmation sera envoyé automatiquement à l&apos;utilisateur.</span>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe (8 caractères)</label>
@@ -399,7 +406,8 @@ function AdminDashboard() {
       {toast && (
         <Toast
           message={toast.message}
-          type={toast.type}
+          subMessage={toast.subMessage}
+          type={toast.type || 'success'}
           onClose={() => setToast(null)}
         />
       )}

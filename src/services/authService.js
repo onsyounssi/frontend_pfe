@@ -1,7 +1,9 @@
 // services/authService.js
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/Users";
+const API_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/Users`
+  : "/api/Users";
 
 // Helper: récupérer le token stocké
 export const getToken = () => localStorage.getItem("token");
@@ -101,3 +103,25 @@ export const getCurrentUser = () => {
 };
 
 export const getCurrentToken = () => localStorage.getItem("token");
+
+// ─────────────────────────────────────────────
+// Mot de passe oublié
+// ─────────────────────────────────────────────
+export const requestForgotPassword = async (email) => {
+  const response = await axios.post(`${API_URL}/forgot-password`, { email });
+  return response.data;
+};
+
+export const confirmPasswordChange = async (email, token) => {
+  const response = await axios.post(`${API_URL}/confirm-password-change`, {
+    email: decodeURIComponent(email),
+    token,
+  });
+  const data = response.data || {};
+  if (!data.success) {
+    const err = new Error(data.message || "Confirmation impossible");
+    err.response = { data };
+    throw err;
+  }
+  return data;
+};

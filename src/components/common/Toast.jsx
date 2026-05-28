@@ -1,7 +1,34 @@
 import React, { useEffect } from 'react';
 import { CheckCircle, AlertCircle, X } from 'lucide-react';
 
-const Toast = ({ message, subMessage, type = 'success', onClose, duration = 6000 }) => {
+const STYLES = {
+  success: {
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    text: 'text-green-800',
+    sub: 'text-green-600',
+    icon: 'text-green-500',
+    bar: 'bg-green-500',
+  },
+  warning: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-900',
+    sub: 'text-amber-700',
+    icon: 'text-amber-500',
+    bar: 'bg-amber-500',
+  },
+  error: {
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    text: 'text-red-800',
+    sub: 'text-red-600',
+    icon: 'text-red-500',
+    bar: 'bg-red-500',
+  },
+};
+
+const Toast = ({ message, subMessage, type = 'success', onClose, duration = 8000 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -10,21 +37,18 @@ const Toast = ({ message, subMessage, type = 'success', onClose, duration = 6000
     return () => clearTimeout(timer);
   }, [onClose, duration]);
 
-  const bgColor = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-  const borderColor = type === 'success' ? 'border-green-200' : 'border-red-200';
-  const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
-  const subTextColor = type === 'success' ? 'text-green-600' : 'text-red-500';
-  const iconColor = type === 'success' ? 'text-green-500' : 'text-red-500';
+  const style = STYLES[type] || STYLES.error;
+  const isSuccess = type === 'success';
 
   return (
-    <div className={`fixed top-24 right-6 z-[2000] flex items-start gap-3 px-5 py-4 rounded-2xl border ${bgColor} ${borderColor} shadow-xl animate-in slide-in-from-right duration-300 min-w-[320px] max-w-md`}>
-      <div className={`flex-shrink-0 mt-0.5 ${iconColor}`}>
-        {type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+    <div className={`fixed top-24 right-6 z-[2000] flex items-start gap-3 px-5 py-4 rounded-2xl border ${style.bg} ${style.border} shadow-xl animate-in slide-in-from-right duration-300 min-w-[320px] max-w-md`}>
+      <div className={`flex-shrink-0 mt-0.5 ${style.icon}`}>
+        {isSuccess ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
       </div>
       <div className="flex-1">
-        <p className={`text-sm font-bold ${textColor}`}>{message}</p>
+        <p className={`text-sm font-bold ${style.text}`}>{message}</p>
         {subMessage && (
-          <p className={`text-xs mt-1 ${subTextColor} leading-relaxed`}>{subMessage}</p>
+          <p className={`text-xs mt-1 ${style.sub} leading-relaxed whitespace-pre-wrap break-words`}>{subMessage}</p>
         )}
       </div>
       <button
@@ -37,7 +61,7 @@ const Toast = ({ message, subMessage, type = 'success', onClose, duration = 6000
       {/* Barre de progression */}
       <div className="absolute bottom-0 left-0 h-1 bg-black/5 w-full rounded-b-2xl overflow-hidden">
         <div
-          className={`h-full ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-progress`}
+          className={`h-full ${style.bar} animate-progress`}
           style={{ animationDuration: `${duration}ms` }}
         />
       </div>

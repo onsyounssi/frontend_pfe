@@ -43,7 +43,6 @@ export default function ResetPassword() {
 
       setMessage(response.data.message || "Mot de passe réinitialisé avec succès !");
 
-      // Rediriger vers la page de connexion après 3 secondes
       setTimeout(() => {
         navigate("/login");
       }, 3000);
