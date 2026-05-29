@@ -5,10 +5,13 @@ import SearchBar from '../components/common/SearchBar';
 import Modal from '../components/common/Modal';
 import ParentsTable from '../components/tables/ParentsTable';
 import BabysittersTable from '../components/tables/BabysittersTable';
+import BookingsTable from '../components/tables/BookingsTable';
 import ParentForm from '../components/forms/ParentForm';
 import BabysitterForm from '../components/forms/BabysitterForm';
+import BookingForm from '../components/forms/BookingForm';
 import userService from '../services/userService';
 import sitterService from '../services/sitterService';
+import bookingService from '../services/bookingService';
 import { AlertTriangle } from 'lucide-react';
 import Toast from '../components/common/Toast';
 
@@ -54,17 +57,21 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const activeTab = searchParams.get('tab') === 'babysitters' ? 'babysitters' : 'parents';
+  const tabParam = searchParams.get('tab');
+  const activeTab = ['parents', 'babysitters', 'bookings'].includes(tabParam) ? tabParam : 'parents';
 
   const setActiveTab = useCallback(
     (tab) => {
-      setSearchParams({ tab: tab === 'babysitters' ? 'babysitters' : 'parents' });
+      const valid = ['parents', 'babysitters', 'bookings'].includes(tab) ? tab : 'parents';
+      setSearchParams({ tab: valid });
     },
     [setSearchParams]
   );
 
   const [parents, setParents] = useState([]);
   const [babysitters, setBabysitters] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [sitterProfiles, setSitterProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -75,7 +82,7 @@ function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, name: '' });
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, name: '', type: 'user' });
   const resetRequestsCountRef = useRef(0);
 
   useEffect(() => {
@@ -155,6 +162,13 @@ function AdminDashboard() {
 
       setParents(parentsData);
       setBabysitters(sittersData);
+      setSitterProfiles(
+        profiles.map((p) => ({
+          id: p._id,
+          label: `${p.prenom || ''} ${p.nom || ''}`.trim() || 'Baby-sitter',
+          tarifHoraire: p.tarifHoraire ?? 0,
+        }))
+      );
 
       const totalResetRequests = parentsData.filter(u => u.resetRequested).length + sittersData.filter(u => u.resetRequested).length;
       if (isSilent && totalResetRequests > resetRequestsCountRef.current) {
@@ -175,15 +189,54 @@ function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    loadUsers(false);
+  const loadBookings = async (isRefresh = false) => {
+    try {
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
+      setError(null);
 
-    // Polling toutes les 15 secondes pour détecter de nouvelles demandes en arrière-plan
+      const data = await bookingService.getAllBookings();
+      const list = Array.isArray(data) ? data : [];
+      setBookings(
+        list.map((b) => ({
+          id: b._id,
+          parentId: b.parentId,
+          sitterProfileId: b.sitterProfileId,
+          dateDebut: b.dateDebut,
+          dateFin: b.dateFin,
+          statut: b.statut,
+          montantTotale: b.montantTotale,
+          childrenCount: b.childrenCount,
+          message: b.message,
+          raw: b,
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+      setError('Impossible de charger les réservations.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers(false, true);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'bookings') {
+      loadBookings(false);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'bookings') return undefined;
     const interval = setInterval(() => {
       loadUsers(false, true);
     }, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTab]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -203,14 +256,31 @@ function AdminDashboard() {
           (item.email && item.email.toLowerCase().includes(q))
       );
     }
-    return babysitters.filter(
-      (item) =>
-        !q ||
-        item.nom.toLowerCase().includes(q) ||
-        item.specialite.toLowerCase().includes(q) ||
-        (item.email && item.email.toLowerCase().includes(q))
-    );
-  }, [activeTab, parents, babysitters, searchTerm]);
+    if (activeTab === 'babysitters') {
+      return babysitters.filter(
+        (item) =>
+          !q ||
+          item.nom.toLowerCase().includes(q) ||
+          item.specialite.toLowerCase().includes(q) ||
+          (item.email && item.email.toLowerCase().includes(q))
+      );
+    }
+    return bookings.filter((b) => {
+      if (!q) return true;
+      const parentName = b.parentId
+        ? `${b.parentId.firstName || ''} ${b.parentId.lastName || ''}`.toLowerCase()
+        : '';
+      const sitterName = b.sitterProfileId
+        ? `${b.sitterProfileId.prenom || ''} ${b.sitterProfileId.nom || ''}`.toLowerCase()
+        : '';
+      return (
+        parentName.includes(q) ||
+        sitterName.includes(q) ||
+        (b.statut && b.statut.toLowerCase().includes(q)) ||
+        (b.parentId?.email && b.parentId.email.toLowerCase().includes(q))
+      );
+    });
+  }, [activeTab, parents, babysitters, bookings, searchTerm]);
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -218,30 +288,81 @@ function AdminDashboard() {
   };
 
   const handleEdit = (item) => {
-    setEditingItem(item);
+    if (activeTab === 'bookings') {
+      setEditingItem({ ...item, type: 'booking' });
+    } else {
+      setEditingItem(item);
+    }
     setShowModal(true);
   };
 
   const handleDelete = (id) => {
+    if (activeTab === 'bookings') {
+      const booking = bookings.find((b) => b.id === id);
+      const parentName = booking?.parentId
+        ? `${booking.parentId.firstName || ''} ${booking.parentId.lastName || ''}`.trim()
+        : 'cette réservation';
+      setConfirmDelete({ show: true, id, name: parentName, type: 'booking' });
+      return;
+    }
     const user = [...parents, ...babysitters].find((u) => u.id === id);
-    setConfirmDelete({ show: true, id, name: user?.nom || 'cet utilisateur' });
+    setConfirmDelete({ show: true, id, name: user?.nom || 'cet utilisateur', type: 'user' });
   };
 
   const executeDelete = async () => {
-    const { id } = confirmDelete;
+    const { id, type } = confirmDelete;
     if (!id) return;
 
     try {
       setDeletingId(id);
-      setConfirmDelete({ show: false, id: null, name: '' });
-      await userService.deleteUser(id);
-      await loadUsers(true);
-      setToast({ message: 'Utilisateur supprimé avec succès.', type: 'success' });
+      setConfirmDelete({ show: false, id: null, name: '', type: 'user' });
+
+      if (type === 'booking') {
+        await bookingService.deleteBooking(id);
+        await loadBookings(true);
+        setToast({ message: 'Réservation supprimée avec succès.', type: 'success' });
+      } else {
+        await userService.deleteUser(id);
+        await loadUsers(true);
+        setToast({ message: 'Utilisateur supprimé avec succès.', type: 'success' });
+      }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Erreur lors de la suppression.';
       setToast({ message: msg, type: 'error' });
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleBookingSubmit = async (formData) => {
+    try {
+      setSubmitting(true);
+      const payload = {
+        parentId: formData.parentId,
+        sitterProfileId: formData.sitterProfileId,
+        dateDebut: formData.dateDebut,
+        dateFin: formData.dateFin,
+        childrenCount: formData.childrenCount,
+        message: formData.message,
+        statut: formData.statut,
+      };
+
+      if (editingItem?.id) {
+        await bookingService.adminUpdateBooking(editingItem.id, payload);
+        setToast({ message: 'Réservation mise à jour avec succès.', type: 'success' });
+      } else {
+        await bookingService.adminCreateBooking(payload);
+        setToast({ message: 'Réservation créée avec succès.', type: 'success' });
+      }
+
+      setShowModal(false);
+      setEditingItem(null);
+      await loadBookings(true);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Erreur lors de l\'enregistrement.';
+      setToast({ message: msg, type: 'error' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -309,6 +430,9 @@ function AdminDashboard() {
   };
 
   const getModalTitle = () => {
+    if (activeTab === 'bookings') {
+      return editingItem?.id ? 'Modifier la réservation' : 'Ajouter une réservation';
+    }
     if (editingItem?.action === 'reset_password') {
       return `Réinitialiser le mot de passe (${editingItem.nom})`;
     }
@@ -319,6 +443,19 @@ function AdminDashboard() {
   };
 
   const renderForm = () => {
+    if (activeTab === 'bookings') {
+      return (
+        <BookingForm
+          initialData={editingItem?.id ? editingItem.raw : null}
+          parents={parents}
+          sitterProfiles={sitterProfiles}
+          onSubmit={handleBookingSubmit}
+          onCancel={() => !submitting && setShowModal(false)}
+          isSubmitting={submitting}
+        />
+      );
+    }
+
     if (editingItem?.action === 'reset_password') {
       return (
         <form onSubmit={async (e) => {
@@ -417,33 +554,41 @@ function AdminDashboard() {
         <main className="flex-1 min-w-0">
           {/* Onglets mobile */}
           <div className="md:hidden flex border-b border-gray-200 bg-white sticky top-0 z-10">
-            {['parents', 'babysitters'].map((tab) => (
+            {[
+              { id: 'parents', label: 'Parents' },
+              { id: 'babysitters', label: 'Sitters' },
+              { id: 'bookings', label: 'Réservations' },
+            ].map((tab) => (
               <button
-                key={tab}
+                key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-sm font-bold ${activeTab === tab ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500'
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-3 text-xs font-bold ${activeTab === tab.id ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500'
                   }`}
               >
-                {tab === 'parents' ? 'Parents' : 'Baby-sitters'}
+                {tab.label}
               </button>
             ))}
           </div>
 
           <div className="px-4 sm:px-6 lg:px-10 py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Parents</p>
-                <p className="text-2xl font-black text-gray-900 mt-1">{loading ? '…' : parents.length}</p>
+                <p className="text-2xl font-black text-gray-900 mt-1">{parents.length}</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Baby-sitters</p>
-                <p className="text-2xl font-black text-gray-900 mt-1">{loading ? '…' : babysitters.length}</p>
+                <p className="text-2xl font-black text-gray-900 mt-1">{babysitters.length}</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Profils liés</p>
-                <p className="text-2xl font-black text-pink-600 mt-1">
-                  {loading ? '…' : babysitters.filter((b) => b.profileId).length}
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Réservations</p>
+                <p className="text-2xl font-black text-pink-600 mt-1">{bookings.length}</p>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">En attente</p>
+                <p className="text-2xl font-black text-amber-600 mt-1">
+                  {bookings.filter((b) => b.statut === 'pending').length}
                 </p>
               </div>
             </div>
@@ -452,18 +597,21 @@ function AdminDashboard() {
               <div className="px-6 py-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-extrabold text-gray-900">
-                    {activeTab === 'parents' ? 'Gestion des parents' : 'Gestion des baby-sitters'}
+                    {activeTab === 'parents' && 'Gestion des parents'}
+                    {activeTab === 'babysitters' && 'Gestion des baby-sitters'}
+                    {activeTab === 'bookings' && 'Gestion des réservations'}
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    Données chargées depuis l&apos;API ; les baby-sitters sont enrichis avec les profils publics
-                    lorsque c&apos;est possible.
+                    {activeTab === 'bookings'
+                      ? 'Ajoutez, modifiez ou supprimez les réservations des utilisateurs.'
+                      : 'Données chargées depuis l\'API ; les baby-sitters sont enrichis avec les profils publics lorsque c\'est possible.'}
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                   <button
                     type="button"
-                    onClick={() => loadUsers(true)}
+                    onClick={() => (activeTab === 'bookings' ? loadBookings(true) : loadUsers(true))}
                     disabled={loading || refreshing}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 disabled:opacity-50"
                   >
@@ -496,7 +644,7 @@ function AdminDashboard() {
                   <span>{error}</span>
                   <button
                     type="button"
-                    onClick={() => loadUsers(false)}
+                    onClick={() => (activeTab === 'bookings' ? loadBookings(false) : loadUsers(false))}
                     className="text-sm font-bold underline"
                   >
                     Réessayer
@@ -506,19 +654,28 @@ function AdminDashboard() {
 
               {!loading && !error && (
                 <div className="overflow-x-auto">
-                  {activeTab === 'parents' ? (
+                  {activeTab === 'parents' && (
                     <ParentsTable
                       parents={filtered}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       deletingId={deletingId}
                     />
-                  ) : (
+                  )}
+                  {activeTab === 'babysitters' && (
                     <BabysittersTable
                       babysitters={filtered}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onViewProfile={handleViewSitterProfile}
+                      deletingId={deletingId}
+                    />
+                  )}
+                  {activeTab === 'bookings' && (
+                    <BookingsTable
+                      bookings={filtered}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
                       deletingId={deletingId}
                     />
                   )}
@@ -536,7 +693,7 @@ function AdminDashboard() {
       {/* Modal de confirmation de suppression style Google/Premium */}
       <Modal
         isOpen={confirmDelete.show}
-        onClose={() => setConfirmDelete({ show: false, id: null, name: '' })}
+        onClose={() => setConfirmDelete({ show: false, id: null, name: '', type: 'user' })}
         title="Confirmation de suppression"
       >
         <div className="text-center p-2">
@@ -549,14 +706,16 @@ function AdminDashboard() {
             Êtes-vous sûr de vouloir supprimer définitivement <strong>{confirmDelete.name}</strong> ?
             <br />
             <span className="text-sm mt-2 block font-medium text-red-500">
-              Toutes les données associées (profil, réservations, messages) seront supprimées de la base de données.
+              {confirmDelete.type === 'booking'
+                ? 'Cette réservation sera supprimée définitivement.'
+                : 'Toutes les données associées (profil, réservations, messages) seront supprimées de la base de données.'}
             </span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="button"
-              onClick={() => setConfirmDelete({ show: false, id: null, name: '' })}
+              onClick={() => setConfirmDelete({ show: false, id: null, name: '', type: 'user' })}
               className="flex-1 px-6 py-3 border-2 border-gray-100 rounded-2xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-200 transition-all duration-200"
             >
               Annuler

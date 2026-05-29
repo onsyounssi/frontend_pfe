@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, Heart, Settings, Home, MessageSquare, Search, LogOut } from 'lucide-react';
+import { Sparkles, Users, Heart, CalendarDays, Home, MessageSquare, Search, LogOut } from 'lucide-react';
 
 const Sidebar = ({ activeTab, onTabChange, onLogout }) => {
   const menuItems = [
     { id: 'parents', label: 'Parents', icon: Users },
     { id: 'babysitters', label: 'Baby-sitters', icon: Heart },
+    { id: 'bookings', label: 'Réservations', icon: CalendarDays },
   ];
 
   const navLinkClass = (isActive) =>
@@ -69,13 +70,6 @@ const Sidebar = ({ activeTab, onTabChange, onLogout }) => {
       </div>
 
       <div className="px-4 pb-6 space-y-1 border-t border-gray-100 pt-4">
-        <Link
-          to="/reservation"
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-        >
-          <Settings className="w-4 h-4" />
-          <span className="font-semibold">Réservations</span>
-        </Link>
         <button
           type="button"
           onClick={onLogout}

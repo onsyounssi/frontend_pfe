@@ -2,7 +2,7 @@
 import axios from "axios";
 import { getToken } from "./authService";
 
-const API_URL = "http://localhost:5000/api/Bookings";
+const API_URL = "/api/Bookings";
 
 const getAuthHeaders = () => {
   const token = getToken();
@@ -93,6 +93,16 @@ const bookingService = {
       console.error("Erreur getAllBookings:", error);
       throw error;
     }
+  },
+
+  adminCreateBooking: async (bookingData) => {
+    const response = await axios.post(`${API_URL}/admin`, bookingData, getAuthHeaders());
+    return response.data;
+  },
+
+  adminUpdateBooking: async (id, bookingData) => {
+    const response = await axios.put(`${API_URL}/${id}/admin`, bookingData, getAuthHeaders());
+    return response.data;
   },
 
   // ─────────────────────────────────────────
