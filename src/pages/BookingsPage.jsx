@@ -107,7 +107,7 @@ function BookingPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // On compare uniquement la date, pas l'heure
 
-      if (selectedDate > today) {
+      if (selectedDate < today) {
         setError("La date de réservation ne peut pas être dans le passé. Veuillez choisir une date à partir d'aujourd'hui ou plus tard.");
         return;
       }
@@ -122,6 +122,7 @@ function BookingPage() {
         setError("La réservation doit être faite pour le mois en cours.");
         return;
       }
+      
 
       if (formData.startTime >= formData.endTime) {
         setError('L\'heure de début doit être antérieure à l\'heure de fin.');
